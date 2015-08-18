@@ -30,4 +30,5 @@ src_install() {
 	doins "${T}/cloud-config.yml"
 	doins "${FILESDIR}/oem-release"
 	doins "${FILESDIR}/helloworld"
+	doins "${FILESDIR}/csphere-latest.tgz"
 }
