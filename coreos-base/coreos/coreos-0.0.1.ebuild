@@ -156,4 +156,5 @@ RDEPEND="${RDEPEND}
 	net-fs/nfs-utils
 	net-misc/iputils
 	dev-vcs/git
+	csphere/csphere
 	"
