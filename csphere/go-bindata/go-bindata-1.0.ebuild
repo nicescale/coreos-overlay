@@ -1,0 +1,1 @@
+go-bindata-9999.ebuild
