@@ -59,6 +59,7 @@ src_compile() {
 		CGO_ENABLED=0 GOOS=linux \
 		go build -a -installsuffix cgo -ldflags="-w" \
 		-o /tmp/csphere-init || die "build csphere-init"
+	cp -a ../tools/etc /tmp/etc || die "copy tools/etc"
 }
 
 src_install() {
@@ -66,7 +67,8 @@ src_install() {
 	newbin /tmp/csphere-init csphere-init
 	newbin ${FILESDIR}/mongod mongod
 
-	dodir ${FILESDIR}/etc /usr/lib/csphere/etc
+	dodir /usr/lib/csphere/etc
+	cp -a /tmp/etc/* /usr/lib/csphere/etc/
 	dosym /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf
 	dosym /usr/lib/csphere/etc/process-agent.json /etc/process-agent.json
 	dosym /usr/lib/csphere/etc/process.json /etc/process.json
