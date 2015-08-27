@@ -30,7 +30,6 @@ DEPEND="
 	>=dev-lang/go-1.3
 	csphere/go-bindata
 	csphere/prometheus
-	csphere/mongo
 "
 
 RDEPEND="
@@ -40,7 +39,7 @@ RESTRICT="installsources strip"
 
 src_prepare() {
 	[ -d assets ] && rm -rf assets
-	gzip -dc ${FILESDIR}/assets-latest.tgz | tar x
+	( gzip -dc ${FILESDIR}/assets-latest.tgz | tar x ) || die "uncompress assets-latest.tgz"
 	cp -r terminal/assets/* assets
 	/build/amd64-usr/usr/bin/go-bindata -nomemcopy -prefix=assets \
 		-o views/assets.go -pkg=views ./assets || die "go-bindata on assets views"
@@ -63,9 +62,15 @@ src_compile() {
 }
 
 src_install() {
-	einfo "in src_install()"
 	newbin /tmp/csphere csphere
 	newbin /tmp/csphere-init csphere-init
+	newbin ${FILESDIR}/mongod mongod
+
+	dodir ${FILESDIR}/etc /usr/lib/csphere/etc
+	dosym /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf
+	dosym /usr/lib/csphere/etc/process-agent.json /etc/process-agent.json
+	dosym /usr/lib/csphere/etc/process.json /etc/process.json
+	dosym /usr/lib/csphere/etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 	systemd_dounit "${FILESDIR}/csphere.service"
 }
