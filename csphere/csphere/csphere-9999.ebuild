@@ -50,6 +50,9 @@ src_compile() {
 	rm -rf /tmp/src/github.com/nicescale/csphere
 	mkdir -p /tmp/src/github.com/nicescale/csphere 
 	cp -a . /tmp/src/github.com/nicescale/csphere/
+	rm -rf /tmp/etc/
+	mkdir -p /tmp/etc/
+	cp -a ./tools/etc/* /tmp/etc/ || die "copy tools/etc"
 	GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
 		CGO_ENABLED=0 GOOS=linux \
 		go build -a -installsuffix cgo -ldflags="-w" \
@@ -59,7 +62,6 @@ src_compile() {
 		CGO_ENABLED=0 GOOS=linux \
 		go build -a -installsuffix cgo -ldflags="-w" \
 		-o /tmp/csphere-init || die "build csphere-init"
-	cp -a ../tools/etc /tmp/etc || die "copy tools/etc"
 }
 
 src_install() {
@@ -67,11 +69,13 @@ src_install() {
 	newbin /tmp/csphere-init csphere-init
 	newbin ${FILESDIR}/mongod mongod
 
-	dodir /usr/lib/csphere/etc
-	cp -a /tmp/etc/* /usr/lib/csphere/etc/
-	dosym /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf
-	dosym /usr/lib/csphere/etc/process-agent.json /etc/process-agent.json
-	dosym /usr/lib/csphere/etc/process.json /etc/process.json
+	dodir /usr/lib/csphere/etc/
+	insinto /usr/lib/csphere/etc/
+	doins -r /tmp/etc/*
+
+	dosym /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf 
+	dosym /usr/lib/csphere/etc/process-agent.json /etc/process-agent.json 
+	dosym /usr/lib/csphere/etc/process.json /etc/process.json 
 	# dosym /usr/lib/csphere/etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 	systemd_dounit "${FILESDIR}/csphere.service"
