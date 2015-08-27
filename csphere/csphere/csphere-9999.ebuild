@@ -70,7 +70,7 @@ src_install() {
 	dosym /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf
 	dosym /usr/lib/csphere/etc/process-agent.json /etc/process-agent.json
 	dosym /usr/lib/csphere/etc/process.json /etc/process.json
-	dosym /usr/lib/csphere/etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+	# dosym /usr/lib/csphere/etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 	systemd_dounit "${FILESDIR}/csphere.service"
 }
