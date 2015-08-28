@@ -62,12 +62,19 @@ src_compile() {
 		CGO_ENABLED=0 GOOS=linux \
 		go build -a -installsuffix cgo -ldflags="-w" \
 		-o /tmp/csphere-init || die "build csphere-init"
+	mkdir -p /tmp/csphere-mongo/
+	tar -xzf ${FILESDIR}/csphere-mongo.tgz -C /tmp/csphere-mongo/
 }
 
 src_install() {
 	newbin /tmp/csphere csphere
 	newbin /tmp/csphere-init csphere-init
-	newbin ${FILESDIR}/mongod mongod
+	newbin /tmp/csphere-mongo/bin/mongod mongod
+	newbin /tmp/csphere-mongo/bin/mongo  mongo
+
+	dodir /usr/share/oem/lib64/
+	insinto /usr/share/oem/lib64/
+	doins -r /tmp/csphere-mongo/lib64/*
 
 	dodir /usr/lib/csphere/etc/
 	insinto /usr/lib/csphere/etc/
