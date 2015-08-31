@@ -3,14 +3,14 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="4"
-CROS_WORKON_PROJECT="coreos/init"
+CROS_WORKON_PROJECT="zhang0137/init"
 CROS_WORKON_LOCALNAME="init"
 CROS_WORKON_REPO="git://github.com"
 
 if [[ "${PV}" == 9999 ]]; then
 	KEYWORDS="~amd64 ~arm ~arm64 ~x86"
 else
-	CROS_WORKON_COMMIT="af207c09eff3b8447d457c5e534a0b7ff3aae514"
+	CROS_WORKON_COMMIT="9445ec63b46225a5e53738a77c7ed9d70b2fe7ce" # branch <csphere-723.3.0> coreos.isoinstall
 	KEYWORDS="amd64 arm arm64 x86"
 fi
 
