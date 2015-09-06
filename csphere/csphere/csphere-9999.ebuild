@@ -85,5 +85,9 @@ src_install() {
 	dosym /usr/lib/csphere/etc/process.json /etc/process.json 
 	# dosym /usr/lib/csphere/etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
-	systemd_dounit "${FILESDIR}/csphere.service"
+	# try to load iso installer from user startup scripts defined in /etc/profile
+	# while only installed on /usr partition is visible from livecd
+	dodir /usr/share/profile.d/
+	insinto /usr/share/profile.d/
+	doins "${FILESDIR}/start_isoinstaller.sh"
 }
