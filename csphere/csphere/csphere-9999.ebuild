@@ -76,6 +76,8 @@ src_install() {
 	insinto /usr/share/oem/lib64/
 	doins -r /tmp/csphere-mongo/lib64/*
 
+	dodir /etc/csphere/
+
 	dodir /usr/lib/csphere/etc/
 	insinto /usr/lib/csphere/etc/
 	doins -r /tmp/etc/*
