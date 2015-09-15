@@ -10,7 +10,7 @@ CROS_WORKON_REPO="git://github.com"
 if [[ "${PV}" == 9999 ]]; then
 	KEYWORDS="~amd64 ~arm ~arm64 ~x86"
 else
-	CROS_WORKON_COMMIT="9445ec63b46225a5e53738a77c7ed9d70b2fe7ce" # branch <csphere-723.3.0> coreos.isoinstall
+	CROS_WORKON_COMMIT="35a8a03a5db0be58e4ff3e49da17f27d5a06fd01" # replace core as cos
 	KEYWORDS="amd64 arm arm64 x86"
 fi
 
