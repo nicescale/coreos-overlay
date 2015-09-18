@@ -3,14 +3,19 @@ Description=Docker Application Container Engine
 Documentation=http://docs.docker.com
 After=docker.socket early-docker.target network.target
 Requires=docker.socket early-docker.target
+# this will setup /run/flannel_docker_opts.env for {BRIDGE}
+After=network-custom.service
+Requires=network-custom.service
 
 [Service]
 Environment=TMPDIR=/var/tmp
-EnvironmentFile=-/run/flannel_docker_opts.env
+Environment=KV_PROVIDER=etcd
+Environment=KV_URL=127.0.0.1:2379
+EnvironmentFile=/run/flannel_docker_opts.env
 MountFlags=slave
 LimitNOFILE=1048576
 LimitNPROC=1048576
-ExecStart=/usr/lib/coreos/dockerd --daemon --host=fd:// $DOCKER_OPTS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
+ExecStart=/usr/lib/coreos/dockerd -b ${BRIDGE} --daemon --host=fd:// $DOCKER_OPTS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
 
 [Install]
 WantedBy=multi-user.target
