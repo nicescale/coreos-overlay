@@ -15,13 +15,15 @@ if [[ ${PV} == *9999 ]]; then
 	DOCKER_GITCOMMIT=""
 	KEYWORDS=""
 else
-	# CROS_WORKON_COMMIT="24f6e3b43a852acb5ad60adea052f4d1e0bc192b" # bridge-ipam branch newest
-	CROS_WORKON_COMMIT="7c8fca2ddb58c8d2c4fb4df31c242886df7dd257" # v1.6.2
+	# CROS_WORKON_COMMIT="7c8fca2ddb58c8d2c4fb4df31c242886df7dd257" # v1.6.2
+	CROS_WORKON_COMMIT="24f6e3b43a852acb5ad60adea052f4d1e0bc192b" # bridge-ipam branch newest
 	DOCKER_GITCOMMIT="${CROS_WORKON_COMMIT:0:7}"
 	KEYWORDS="amd64 arm64"
 fi
 
-inherit bash-completion-r1 linux-info multilib systemd udev user cros-workon
+# inherit bash-completion-r1 linux-info multilib systemd udev user cros-workon
+# remove linux-info to turn off fucking kernel require
+inherit bash-completion-r1 multilib systemd udev user cros-workon
 
 LICENSE="Apache-2.0"
 SLOT="0"
