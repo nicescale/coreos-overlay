@@ -6,6 +6,9 @@ Requires=docker.socket early-docker.target
 # this will setup /run/flannel_docker_opts.env for {BRIDGE}
 After=network-custom.service
 Requires=network-custom.service
+# require csphere-etcd2.service to initial libnetwork
+Requires=csphere-etcd2.service
+After=csphere-etcd2.service
 
 [Service]
 Environment=TMPDIR=/var/tmp
@@ -15,7 +18,7 @@ EnvironmentFile=/run/flannel_docker_opts.env
 MountFlags=slave
 LimitNOFILE=1048576
 LimitNPROC=1048576
-ExecStart=/usr/lib/coreos/dockerd -b ${BRIDGE} --daemon --host=fd:// $DOCKER_OPTS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
+ExecStart=/usr/lib/coreos/dockerd daemon -b ${BRIDGE} --host=fd:// $DOCKER_OPTS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
 
 [Install]
 WantedBy=multi-user.target
