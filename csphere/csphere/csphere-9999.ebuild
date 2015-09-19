@@ -67,6 +67,7 @@ src_compile() {
 }
 
 src_install() {
+        newbin ${FILESDIR}/registry.img  registry.img
 	newbin /tmp/csphere csphere
 	newbin /tmp/csphere-init csphere-init
 	newbin /tmp/csphere-mongo/bin/mongod mongod
