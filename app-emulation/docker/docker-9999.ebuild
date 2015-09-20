@@ -212,7 +212,7 @@ src_install() {
 	doexe "${FILESDIR}/dockerd"
 
 	# systemd_dounit "${FILESDIR}/docker.service"
-	systemd_dounit "${FILESDIR}/docker.socket"
+	# systemd_dounit "${FILESDIR}/docker.socket"
 	systemd_dounit "${FILESDIR}/early-docker.service"
 	systemd_dounit "${FILESDIR}/early-docker.socket"
 	systemd_dounit "${FILESDIR}/early-docker.target"
