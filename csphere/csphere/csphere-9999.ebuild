@@ -58,7 +58,7 @@ src_compile() {
 	VERSION=$(cat VERSION.txt)
 	GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
 		CGO_ENABLED=0 GOOS=linux \
-		go build -a -installsuffix cgo -ldflags="-X $PKG/version.version=$VERSION -X $PKG/version.gitCommit=$GIT_COMMIT -w" \
+		go build -a -installsuffix cgo -ldflags="-X $PKG/version.version '$VERSION' -X $PKG/version.gitCommit '$GIT_COMMIT' -w" \
 		-o /tmp/csphere || die  "build csphere"
 	cd tools/init/
 	GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
