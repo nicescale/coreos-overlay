@@ -16,7 +16,7 @@ if [[ ${PV} == *9999 ]]; then
 	KEYWORDS=""
 else
 	# CROS_WORKON_COMMIT="7c8fca2ddb58c8d2c4fb4df31c242886df7dd257" # v1.6.2
-	CROS_WORKON_COMMIT="24f6e3b43a852acb5ad60adea052f4d1e0bc192b" # bridge-ipam branch newest
+	CROS_WORKON_COMMIT="7dc2c7280446caaf3da4f4952b666f80442df4a7" # bridge-ipam branch newest
 	DOCKER_GITCOMMIT="${CROS_WORKON_COMMIT:0:7}"
 	KEYWORDS="amd64 arm64"
 fi
