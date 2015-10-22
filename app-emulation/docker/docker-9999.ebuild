@@ -16,7 +16,7 @@ if [[ ${PV} == *9999 ]]; then
 	KEYWORDS=""
 else
 	# CROS_WORKON_COMMIT="7c8fca2ddb58c8d2c4fb4df31c242886df7dd257" # v1.6.2
-	CROS_WORKON_COMMIT="f803625bbc657d5992571778cabfde12ad9b0fb8" # csphere-1.9.0-rc1 branch newest
+	CROS_WORKON_COMMIT="d67e5aa53366882d23b57578e5693faaac176515" # csphere-1.9.0-rc1.2 branch newest
 	DOCKER_GITCOMMIT="${CROS_WORKON_COMMIT:0:7}"
 	KEYWORDS="amd64 arm64"
 fi
