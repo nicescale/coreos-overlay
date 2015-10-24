@@ -1,0 +1,15 @@
+- name: csphere-prepare.service
+  command: start
+  enable: true
+  content: |
+    [Unit]
+    Description=Csphere Prepare Work
+    Requires=systemd-networkd-wait-online.service
+
+    [Service]
+    User=root
+    Type=oneshot
+    ExecStart=/etc/csphere/csphere-prepare.sh
+
+    [Install]
+    WantedBy=multi-user.target

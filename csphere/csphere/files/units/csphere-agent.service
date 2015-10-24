@@ -1,0 +1,23 @@
+- name: csphere-agent.service
+  command: start
+  enable: true
+  content: |
+    [Unit]
+    Description=Csphere Agent Service
+    After=csphere-prepare.service
+    After=csphere-etcd2.service
+    After=csphere-skydns.service
+    After=csphere-docker.service
+    Requires=csphere-prepare.service
+
+    [Service]
+    EnvironmentFile=/etc/csphere/csphere-public.env
+    EnvironmentFile=/etc/csphere/csphere-agent.env
+    User=root
+    ExecStartPre=/bin/sleep 3s
+    ExecStart=/bin/csphere --tls join
+    Restart=always
+    RestartSec=3s
+
+    [Install]
+    WantedBy=multi-user.target

@@ -60,11 +60,11 @@ src_compile() {
 		CGO_ENABLED=0 GOOS=linux \
 		go build -a -installsuffix cgo -ldflags="-X $PKG/version.version '$VERSION' -X $PKG/version.gitCommit '$GIT_COMMIT' -w" \
 		-o /tmp/csphere || die  "build csphere"
-	cd tools/init/
-	GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
-		CGO_ENABLED=0 GOOS=linux \
-		go build -a -installsuffix cgo -ldflags="-w" \
-		-o /tmp/csphere-init || die "build csphere-init"
+	# cd tools/init/
+	# GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
+		# CGO_ENABLED=0 GOOS=linux \
+		# go build -a -installsuffix cgo -ldflags="-w" \
+		# -o /tmp/csphere-init || die "build csphere-init"
 	mkdir -p /tmp/csphere-mongo/
 	tar -xzf ${FILESDIR}/csphere-mongo.tgz -C /tmp/csphere-mongo/
 }
@@ -72,7 +72,7 @@ src_compile() {
 src_install() {
         newbin ${FILESDIR}/registry.img  registry.img
 	newbin /tmp/csphere csphere
-	newbin /tmp/csphere-init csphere-init
+	# newbin /tmp/csphere-init csphere-init
 	newbin /tmp/csphere-mongo/bin/mongod mongod
 	newbin /tmp/csphere-mongo/bin/mongo  mongo
 
@@ -86,9 +86,30 @@ src_install() {
 	insinto /usr/lib/csphere/etc/
 	doins -r /tmp/etc/*
 
+	insinto /usr/lib/csphere/etc/
+	doins "${FILESDIR}/units/csphere-prepare.sh"
+
+	# both of controller and agent need
+	systemd_dounit "${FILESDIR}/units/csphere-prepare.service"
+	systemd_dounit "${FILESDIR}/units/csphere-agent.service"
+
+	# only controller need
+	systemd_dounit "${FILESDIR}/units/csphere-mongodb.service"
+	systemd_dounit "${FILESDIR}/units/csphere-prometheus.service"
+	systemd_dounit "${FILESDIR}/units/csphere-etcd2-controller.service"
+	systemd_dounit "${FILESDIR}/units/csphere-docker-controller.service"
+	systemd_dounit "${FILESDIR}/units/csphere-controller.service"
+
+	# only agent need
+	systemd_dounit "${FILESDIR}/units/csphere-etcd2-agent.service"
+	systemd_dounit "${FILESDIR}/units/csphere-skydns.service"
+	systemd_dounit "${FILESDIR}/units/csphere-docker-agent.service"
+	systemd_dounit "${FILESDIR}/units/csphere-dockeripam.service"
+
 	dosym /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf 
-	dosym /usr/lib/csphere/etc/process-agent.json /etc/process-agent.json 
-	dosym /usr/lib/csphere/etc/process.json /etc/process.json 
+	#dosym /usr/lib/csphere/etc/process-agent.json /etc/process-agent.json 
+	#dosym /usr/lib/csphere/etc/process.json /etc/process.json 
+	dosym /usr/lib/csphere/etc/csphere-prepare.sh /etc/csphere/csphere-prepare.sh
 	# this will lead to file collision with app-misc/mime-types-9:0::portage-stable
 	# dosym /usr/lib/csphere/etc/mime.types /etc/mime.types
 	# dosym /usr/lib/csphere/etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt

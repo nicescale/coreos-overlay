@@ -1,0 +1,23 @@
+- name: csphere-docker-controller.service
+  command: start
+  enable: true
+  content: |
+    [Unit]
+    Description=Csphere Controller Docker Engine Service
+    Documentation=http://docs.docker.com
+    After=network.target
+    Conflicts=docker.service
+
+    [Service]
+    Environment=TMPDIR=/var/tmp
+    EnvironmentFile=/etc/csphere/csphere-public.env
+    EnvironmentFile=/etc/csphere/csphere-docker-controller.env
+    Restart=always
+    RestartSec=10s
+    MountFlags=slave
+    LimitNOFILE=1048576
+    LimitNPROC=1048576
+    ExecStart=/usr/bin/docker daemon --storage-driver=overlay
+
+    [Install]
+    WantedBy=multi-user.target

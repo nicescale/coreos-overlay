@@ -1,0 +1,29 @@
+- name: csphere-docker-agent.service
+  command: start
+  enable: true
+  content: |
+    [Unit]
+    Description=Csphere Agent Docker Engine Service
+    Documentation=http://docs.docker.com
+    After=network.target
+    Requires=csphere-etcd2-agent.service
+    After=csphere-etcd2-agent.service
+    After=csphere-dockeripam.service
+    Conflicts=docker.service
+
+    [Service]
+    Environment=TMPDIR=/var/tmp
+    Environment=KV_PROVIDER=etcd
+    Environment=KV_URL=127.0.0.1:2379
+    EnvironmentFile=/etc/csphere/csphere-public.env
+    EnvironmentFile=/etc/csphere/csphere-docker-agent.env
+    Restart=always
+    RestartSec=10s
+    MountFlags=slave
+    LimitNOFILE=1048576
+    LimitNPROC=1048576
+    ExecStart=/usr/bin/docker daemon -b br0 --csphere --iptables=false --ip-forward=false --default-gateway=${DEFAULT_GW} --storage-driver=overlay
+				
+
+    [Install]
+    WantedBy=multi-user.target
