@@ -8,8 +8,9 @@ Before=csphere-agent.service
 [Service]
 User=root
 EnvironmentFile=/etc/csphere/csphere-public.env
-EnvironmentFile=-/etc/csphere/csphere-dockeripam.env
+EnvironmentFile=/etc/csphere/csphere-dockeripam.env
 ExecStartPre=/bin/sleep 3s
+ExecStartPre=/bin/net-plugin reserve --ip-start=${START} --ip-end=${END}
 ExecStart=/bin/net-plugin --cluster-store etcd://127.0.0.1:2379 server
 Restart=always
 RestartSec=10s

@@ -5,15 +5,42 @@ set -ex
 FInstOpts="/etc/csphere/inst-opts.env"
 FPublicEnv="/etc/csphere/csphere-public.env"
 
+# func def
+mask2cidr() {
+    local nbits=0
+    IFS=.
+    for dec in $1 ; do
+        case $dec in
+            255) let nbits+=8;;
+            254) let nbits+=7;;
+            252) let nbits+=6;;
+            248) let nbits+=5;;
+            240) let nbits+=4;;
+            224) let nbits+=3;;
+            192) let nbits+=2;;
+            128) let nbits+=1;;
+            0);;
+            *) return 1 ;;
+        esac
+    done
+    echo -e "$nbits"
+}
+
 # load install opts file
 . ${FInstOpts}
 
 # write csphere-public.env
-# br0 IPAddress and Default Route Gateway
+# br0 IPAddress, br0 Netmask, Default Route Gateway
 ipaddr=$( ifconfig br0  2>&- |\
 	awk '($1=="inet"){print $2;exit}' )
 if [ -z "${ipaddr}" ]; then
 	echo "WARN: no local ipaddr found on br0"
+fi
+mask1=$( ifconfig br0  2>&- |\
+	awk '($1=="inet"){print $4;exit}' )
+mask=$( mask2cidr ${mask1} )
+if [ $? -ne 0 ]; then
+	echo "WARN: convert mask to cidr error on ${mask1}"
 fi
 defaultgw=$(route -n 2>&- |\
 	awk '($1=="0.0.0.0" && $4~/UG/){print $2;exit;}' )
@@ -22,11 +49,12 @@ if [ -z "${defaultgw}" ]; then
 fi
 cat <<EOF > ${FPublicEnv}
 LOCAL_IP=${ipaddr}
+NET_MASK=${mask}
 DEFAULT_GW=${defaultgw}
 EOF
 
 # load public env file
-# variable needed later: ${LOCAL_IP}
+# variable needed later: ${LOCAL_IP} ${NET_MASK}
 . ${FPublicEnv}
 
 # setup related files for csphere service units
@@ -84,6 +112,11 @@ EOF
 	fi
 
 elif [ "${COS_ROLE}" == "agent" ]; then
+	# create /etc/csphere/csphere-dockeripam.env
+	cat << EOF > /etc/csphere/csphere-dockeripam.env
+START=${COS_CONTROLLER%%:*}/${NET_MASK}
+END=${COS_CONTROLLER%%:*}/${NET_MASK}
+EOF
 
 	# create /etc/csphere/csphere-agent.env
 	cat << EOF > /etc/csphere/csphere-agent.env
