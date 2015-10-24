@@ -1,7 +1,8 @@
 [Unit]
 Description=Csphere Controller Docker Engine Service
 Documentation=http://docs.docker.com
-After=network.target
+After=csphere-etcd2-controller.service
+After=csphere-prepare.service
 Conflicts=docker.service
 
 [Service]

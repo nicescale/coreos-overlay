@@ -87,7 +87,7 @@ src_install() {
 	doins -r /tmp/etc/*
 
 	insinto /usr/lib/csphere/etc/
-	dobin "${FILESDIR}/units/csphere-prepare.sh"
+	dobin "${FILESDIR}/units/csphere-prepare.bash"
 
 	# both of controller and agent need
 	systemd_dounit "${FILESDIR}/units/csphere-prepare.service"
@@ -106,10 +106,25 @@ src_install() {
 	systemd_dounit "${FILESDIR}/units/csphere-dockeripam.service"
 	systemd_dounit "${FILESDIR}/units/csphere-docker-agent.service"
 
+	# startup order
+	# controller:
+	#	csphere-prepare.service  (require network-online)
+	#	csphere-mongodb.service
+	#	csphere-prometheus.service
+	#	csphere-etcd2-controller.service  
+	#	csphere-docker-controller.service
+	#	csphere-controller.service
+	#	csphere-agent.service
+	# agent:
+	#	csphere-prepare.service  (require network-online)
+	#	csphere-etcd2-agent.service  (require network-online)
+	#	csphere-skydns.service
+	#	csphere-dockeripam.service
+	#	csphere-docker-agent.service
+	#	csphere-agent.service  (require network-online)
+
 	dosym /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf 
-	#dosym /usr/lib/csphere/etc/process-agent.json /etc/process-agent.json 
-	#dosym /usr/lib/csphere/etc/process.json /etc/process.json 
-	dosym /usr/lib/csphere/etc/csphere-prepare.sh /etc/csphere/csphere-prepare.sh
+	dosym /usr/lib/csphere/etc/csphere-prepare.bash /etc/csphere/csphere-prepare.bash
 	# this will lead to file collision with app-misc/mime-types-9:0::portage-stable
 	# dosym /usr/lib/csphere/etc/mime.types /etc/mime.types
 	# dosym /usr/lib/csphere/etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt

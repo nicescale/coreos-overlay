@@ -1,10 +1,12 @@
 [Unit]
 Description=Csphere Agent Docker Engine Service
 Documentation=http://docs.docker.com
-After=network.target
-Requires=csphere-etcd2-agent.service
+After=systemd-networkd-wait-online.service
+Wants=systemd-networkd-wait-online.service 
+After=csphere-prepare.service
 After=csphere-etcd2-agent.service
 After=csphere-dockeripam.service
+Before=csphere-agent.service
 Conflicts=docker.service
 
 [Service]

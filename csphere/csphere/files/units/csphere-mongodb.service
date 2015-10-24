@@ -1,6 +1,6 @@
 [Unit]
 Description=Csphere Mongodb Service
-After=network.target
+After=csphere-prepare.service
 
 [Service]
 User=root

@@ -1,10 +1,14 @@
 [Unit]
 Description=Csphere Agent Service
+After=systemd-networkd-wait-online.service
+Wants=systemd-networkd-wait-online.service 
 After=csphere-prepare.service
-After=csphere-etcd2.service
-After=csphere-skydns.service
-After=csphere-docker.service
-Requires=csphere-prepare.service
+# only effective on cos controller
+After=csphere-controller.service
+# only effective on cos agent
+After=csphere-etcd2-agent.service
+After=csphere-dockeripam.service
+After=csphere-docker-agent.service
 
 [Service]
 EnvironmentFile=/etc/csphere/csphere-public.env

@@ -1,12 +1,18 @@
 [Unit]
 Description=Csphere Etcd2 Service
 After=systemd-networkd-wait-online.service
+Wants=systemd-networkd-wait-online.service 
+After=csphere-prepare.service
+Before=csphere-skydns.service
+Before=csphere-dockeripam.service
+Before=csphere-docker-agent.service
+Before=csphere-agent.service
 
 [Service]
 User=root
 EnvironmentFile=/etc/csphere/csphere-public.env
 EnvironmentFile=/etc/csphere/csphere-etcd2-agent.env
-ExecStartPre=/bin/sleep 5s
+ExecStartPre=/bin/sleep 3s
 ExecStart=/bin/etcd2
 Restart=always
 RestartSec=10s

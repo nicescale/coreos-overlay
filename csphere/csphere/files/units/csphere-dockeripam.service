@@ -1,13 +1,15 @@
 [Unit]
 Description=Csphere Docker IPAM Service
-Requires=csphere-etcd2-agent.service
+After=csphere-prepare.service
 After=csphere-etcd2-agent.service
 Before=csphere-docker-agent.service
+Before=csphere-agent.service
 
 [Service]
 User=root
 EnvironmentFile=/etc/csphere/csphere-public.env
 EnvironmentFile=-/etc/csphere/csphere-dockeripam.env
+ExecStartPre=/bin/sleep 3s
 ExecStart=/bin/net-plugin --cluster-store etcd://127.0.0.1:2379 server
 Restart=always
 RestartSec=10s
