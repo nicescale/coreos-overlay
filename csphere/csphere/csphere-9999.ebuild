@@ -86,7 +86,9 @@ src_install() {
 	insinto /usr/lib/csphere/etc/
 	doins -r /tmp/etc/*
 
-	insinto /usr/lib/csphere/etc/
+	# See: https://devmanual.gentoo.org/function-reference/install-functions/index.html
+	# insinto /usr/lib/csphere/etc/   # effect only: doins, newins
+	into /usr/lib/csphere/etc/
 	dobin "${FILESDIR}/units/csphere-prepare.bash"
 
 	# both of controller and agent need
