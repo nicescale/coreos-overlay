@@ -103,8 +103,8 @@ src_install() {
 	# only agent need
 	systemd_dounit "${FILESDIR}/units/csphere-etcd2-agent.service"
 	systemd_dounit "${FILESDIR}/units/csphere-skydns.service"
-	systemd_dounit "${FILESDIR}/units/csphere-docker-agent.service"
 	systemd_dounit "${FILESDIR}/units/csphere-dockeripam.service"
+	systemd_dounit "${FILESDIR}/units/csphere-docker-agent.service"
 
 	dosym /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf 
 	#dosym /usr/lib/csphere/etc/process-agent.json /etc/process-agent.json 

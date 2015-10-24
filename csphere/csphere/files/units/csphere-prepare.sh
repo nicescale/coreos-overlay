@@ -8,7 +8,37 @@ FPublicEnv="/etc/csphere/csphere-public.env"
 # load install opts file
 . ${FInstOpts}
 
+# write csphere-public.env
+# br0 IPAddress and Default Route Gateway
+ipaddr=$( ifconfig br0  2>&- |\
+	awk '($1=="inet"){print $2;exit}' )
+if [ -z "${ipaddr}" ]; then
+	echo "WARN: no local ipaddr found on br0"
+fi
+defaultgw=$(route -n 2>&- |\
+	awk '($1=="0.0.0.0" && $4~/UG/){print $2;exit;}' )
+if [ -z "${defaultgw}" ]; then
+	echo "WARN: no local default gateway route found"
+fi
+cat <<EOF > ${FPublicEnv}
+LOCAL_IP=${ipaddr}
+DEFAULT_GW=${defaultgw}
+EOF
+
+# load public env file
+# variable needed later: ${LOCAL_IP}
+. ${FPublicEnv}
+
+# setup related files for csphere service units
 if [ "${COS_ROLE}" == "controller" ]; then
+	#
+cat << EOF > /etc/csphere/csphere-etcd2-controller.env
+ETCD_DATA_DIR=/var/lib/etcd2
+ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+ETCD_ADVERTISE_CLIENT_URLS=http://${LOCAL_IP}:2379
+ETCD_LISTEN_PEER_URLS=http://${LOCAL_IP}:2380
+ETCD_DEBUG=true
+EOF
 
 	# create /etc/csphere/csphere-controller.env
 	cat << EOF > /etc/csphere/csphere-controller.env
@@ -26,7 +56,7 @@ ROLE=agent
 CONTROLLER_ADDR=127.0.0.1:${COS_CONTROLLER_PORT}
 AUTH_KEY=${COS_AUTH_KEY}
 DEBUG=true
-SVRPOOLID=csphere-internal
+SVRPOOLID=${COS_SVRPOOL_ID}
 EOF
 
 	# create /etc/prometheus.yml
@@ -54,27 +84,29 @@ EOF
 	fi
 
 elif [ "${COS_ROLE}" == "agent" ]; then
-	:
+
+	# create /etc/csphere/csphere-agent.env
+	cat << EOF > /etc/csphere/csphere-agent.env
+ROLE=agent
+CONTROLLER_ADDR=${COS_CONTROLLER}
+AUTH_KEY=${COS_INST_CODE}
+DEBUG=true
+SVRPOOLID=${COS_SVRPOOL_ID}
+EOF
+
+	# create /etc/csphere/csphere-etcd2-agent.env
+	cat << EOF > /etc/csphere/csphere-etcd2-agent.env
+ETCD_DATA_DIR=/var/lib/etcd2
+ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+ETCD_INITIAL_ADVERTISE_PEER_URLS=http://${LOCAL_IP}:2380
+ETCD_ADVERTISE_CLIENT_URLS=http://${LOCAL_IP}:2379
+ETCD_LISTEN_PEER_URLS=http://${LOCAL_IP}:2380
+ETCD_DISCOVERY=${COS_DISCOVERY_URL}
+ETCD_DEBUG=true
+EOF
 else
 	echo "CRIT: cos role unknown: (${COS_ROLE})"
 fi
-
-# write csphere-public.env
-# br0 IPAddress and Default Route Gateway
-ipaddr=$( ifconfig br0  2>&- |\
-	awk '($1=="inet"){print $2;exit}' )
-if [ -z "${ipaddr}" ]; then
-	echo "WARN: no local ipaddr found on br0"
-fi
-defaultgw=$(route -n 2>&- |\
-	awk '($1=="0.0.0.0" && $4~/UG/){print $2;exit;}' )
-if [ -z "${defaultgw}" ]; then
-	echo "WARN: no local default gateway route found"
-fi
-cat <<EOF > ${FPublicEnv}
-LOCAL_IP=${ipaddr}
-DEFAULT_GW=${defaultgw}
-EOF
 
 
 # promisc br0

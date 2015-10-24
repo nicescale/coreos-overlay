@@ -12,7 +12,7 @@ Environment=TMPDIR=/var/tmp
 Environment=KV_PROVIDER=etcd
 Environment=KV_URL=127.0.0.1:2379
 EnvironmentFile=/etc/csphere/csphere-public.env
-EnvironmentFile=/etc/csphere/csphere-docker-agent.env
+EnvironmentFile=-/etc/csphere/csphere-docker-agent.env
 Restart=always
 RestartSec=10s
 MountFlags=slave
