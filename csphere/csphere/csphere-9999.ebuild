@@ -87,7 +87,7 @@ src_install() {
 	doins -r /tmp/etc/*
 
 	insinto /usr/lib/csphere/etc/
-	doins "${FILESDIR}/units/csphere-prepare.sh"
+	dobin "${FILESDIR}/units/csphere-prepare.sh"
 
 	# both of controller and agent need
 	systemd_dounit "${FILESDIR}/units/csphere-prepare.service"
