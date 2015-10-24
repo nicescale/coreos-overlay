@@ -6,9 +6,9 @@ Wants=systemd-networkd-wait-online.service
 [Service]
 User=root
 EnvironmentFile=/etc/csphere/csphere-public.env
-EnvironmentFile=/etc/csphere/csphere-etcd2-controller.env
-ExecStartPre=/bin/sleep 5s
+EnvironmentFile=-/etc/csphere/csphere-etcd2-controller.env
 ExecStart=/bin/etcd2
+ExecStartPost=/bin/sleep 3s
 ExecStartPost=/usr/bin/curl -XPUT http://127.0.0.1:2379/v2/keys/discovery/hellocsphere/_config/size -d value=1
 Restart=always
 RestartSec=10s

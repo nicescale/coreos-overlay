@@ -7,7 +7,7 @@ Conflicts=docker.service
 [Service]
 Environment=TMPDIR=/var/tmp
 EnvironmentFile=/etc/csphere/csphere-public.env
-EnvironmentFile=/etc/csphere/csphere-docker-controller.env
+EnvironmentFile=-/etc/csphere/csphere-docker-controller.env
 Restart=always
 RestartSec=10s
 MountFlags=slave

@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=root
 EnvironmentFile=/etc/csphere/csphere-public.env
-EnvironmentFile=/etc/csphere/csphere-mongodb.env
+EnvironmentFile=-/etc/csphere/csphere-mongodb.env
 ExecStartPre=/bin/mkdir -p /data/db
 ExecStartPre=/bin/mkdir -p /data/logs
 ExecStart=/bin/mongod --quiet --config /etc/mongodb.conf
