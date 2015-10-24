@@ -126,7 +126,7 @@ src_install() {
 	#	csphere-agent.service  (require network-online)
 
 	dosym /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf 
-	dosym /usr/lib/csphere/etc/csphere-prepare.bash /etc/csphere/csphere-prepare.bash
+	dosym /usr/lib/csphere/etc/bin/csphere-prepare.bash /etc/csphere/csphere-prepare.bash
 	# this will lead to file collision with app-misc/mime-types-9:0::portage-stable
 	# dosym /usr/lib/csphere/etc/mime.types /etc/mime.types
 	# dosym /usr/lib/csphere/etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
