@@ -123,6 +123,7 @@ EOF
 	cat << EOF > /etc/csphere/csphere-agent.env
 ROLE=agent
 CONTROLLER_ADDR=${COS_CONTROLLER}
+DNS_ADDR=${LOCAL_IP}
 AUTH_KEY=${COS_INST_CODE}
 DEBUG=true
 SVRPOOLID=${COS_SVRPOOL_ID}
