@@ -95,14 +95,14 @@ rule_files:
   - "/data/alarm-rules/*.rule"
 scrape_configs:
   - job_name: 'csphere-exporter'
-  basic_auth:
-    username: 'csphere'
-    password: '${COS_AUTH_KEY}'
-  scrape_interval: 30s
-  scrape_timeout: 10s
-  metrics_path: '/api/metrics'
-  target_groups:
-    - targets: ['127.0.0.1:${COS_CONTROLLER_PORT}']
+    basic_auth:
+      username: 'csphere'
+      password: '${COS_AUTH_KEY}'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    metrics_path: '/api/metrics'
+    target_groups:
+      - targets: ['127.0.0.1:${COS_CONTROLLER_PORT}']
 EOF
 
 	# create /etc/mime.types
