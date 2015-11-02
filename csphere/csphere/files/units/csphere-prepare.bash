@@ -81,7 +81,7 @@ EOF
 	# create /etc/csphere/csphere-agent.env
 	cat << EOF > /etc/csphere/csphere-agent.env
 ROLE=agent
-CONTROLLER_ADDR=127.0.0.1:${COS_CONTROLLER_PORT}
+CONTROLLER_ADDR=${LOCAL_IP}:${COS_CONTROLLER_PORT}
 AUTH_KEY=${COS_AUTH_KEY}
 SVRPOOLID=${COS_SVRPOOL_ID}
 EOF
