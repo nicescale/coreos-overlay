@@ -101,7 +101,9 @@ local_clone() {
 	# if it can't find the revision you requested, so we use that
 	# instead.
 
-	git clone -sn "${path}" "${S}" || die "Can't clone ${path}"
+	# git clone -sn "${path}" "${S}" || die "Can't clone ${path}"
+	# we indeed clone copy everything
+	git clone "${path}" "${S}" || die "Can't clone ${path}"
 
 	if [ "${CROS_WORKON_COMMIT}" == "-" ]; then
 		# just use HEAD instead of do another checkout
