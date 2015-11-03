@@ -102,6 +102,13 @@ local_clone() {
 	# instead.
 
 	git clone -sn "${path}" "${S}" || die "Can't clone ${path}"
+
+	if [ "${CROS_WORKON_COMMIT}" == "-" ]; then
+		# just use HEAD instead of do another checkout
+		einfo "CROS_WORKON_COMMIT was set empty, skip local checkout"
+		return 0
+	fi
+
 	if ! git -C "${S}" checkout -q "${CROS_WORKON_COMMIT}"; then
 		ewarn "Cannot run git checkout ${CROS_WORKON_COMMIT} in ${S}."
 		ewarn "Is ${path} up to date? Try running repo sync."
