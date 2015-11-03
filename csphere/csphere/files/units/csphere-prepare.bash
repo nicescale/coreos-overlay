@@ -173,3 +173,9 @@ else
 	ln -sv ${fcpem} /root/.csphere/cert.pem
 	/bin/true
 fi
+
+# create symbolic link for strace
+if [ ! -e /opt/bin/strace ]; then
+	mkdir -p /opt/bin/
+	ln -sv /usr/lib/csphere/etc/bin/strace  /opt/bin/strace
+fi
