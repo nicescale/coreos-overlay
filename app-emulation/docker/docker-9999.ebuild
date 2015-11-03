@@ -15,9 +15,8 @@ if [[ ${PV} == *9999 ]]; then
 	DOCKER_GITCOMMIT=""
 	KEYWORDS=""
 else
-	# CROS_WORKON_COMMIT="7c8fca2ddb58c8d2c4fb4df31c242886df7dd257" # v1.6.2
-	CROS_WORKON_COMMIT="4b4fa080360d63bee75ed3227b0bffaa0f18c685"
-	DOCKER_GITCOMMIT="${CROS_WORKON_COMMIT:0:7}"
+	CROS_WORKON_COMMIT="-"  # tell ebuild to skip another checkout
+	# DOCKER_GITCOMMIT="${CROS_WORKON_COMMIT:0:7}"  # docker make.sh will auto git rev-parse HEAD
 	KEYWORDS="amd64 arm64"
 fi
 

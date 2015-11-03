@@ -13,7 +13,7 @@ CROS_WORKON_REPO="git://github.com"
 if [[ "${PV}" == 9999 ]]; then
     KEYWORDS="~amd64 ~arm64"
 else
-    CROS_WORKON_COMMIT="3c9bde188312dad74a743159ae9f250ed2424b3e"
+    CROS_WORKON_COMMIT="-"  # tell ebuild to skip another checkout
     KEYWORDS="amd64 arm64"
 fi
 
