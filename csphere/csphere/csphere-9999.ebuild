@@ -71,7 +71,6 @@ src_compile() {
 
 src_install() {
 	newbin ${FILESDIR}/registry.img  registry.img
-	newbin ${FILESDIR}/strace  strace
 	newbin /tmp/csphere csphere
 	# newbin /tmp/csphere-init csphere-init
 	newbin /tmp/csphere-mongo/bin/mongod mongod
@@ -91,6 +90,7 @@ src_install() {
 	# insinto /usr/lib/csphere/etc/   # effect only: doins, newins
 	into /usr/lib/csphere/etc/
 	dobin "${FILESDIR}/units/csphere-prepare.bash"
+	dobin "${FILESDIR}/strace"   # collision with dev-util/strace-4.6
 
 	# both of controller and agent need
 	systemd_dounit "${FILESDIR}/units/csphere-prepare.service"
