@@ -59,13 +59,14 @@ EOF
 
 # setup related files for csphere service units
 if [ "${COS_ROLE}" == "controller" ]; then
-	#
+	# create /etc/csphere/csphere-etcd2-controller.env
 cat << EOF > /etc/csphere/csphere-etcd2-controller.env
 ETCD_DATA_DIR=/var/lib/etcd2
 ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
 ETCD_ADVERTISE_CLIENT_URLS=http://${LOCAL_IP}:2379
 ETCD_LISTEN_PEER_URLS=http://${LOCAL_IP}:2380
 ETCD_DEBUG=true
+COS_CLUSTER_SIZE=${COS_CLUSTER_SIZE}
 EOF
 
 	# create /etc/csphere/csphere-controller.env
