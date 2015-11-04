@@ -134,9 +134,19 @@ ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
 ETCD_INITIAL_ADVERTISE_PEER_URLS=http://${LOCAL_IP}:2380
 ETCD_ADVERTISE_CLIENT_URLS=http://${LOCAL_IP}:2379
 ETCD_LISTEN_PEER_URLS=http://${LOCAL_IP}:2380
-ETCD_DISCOVERY=${COS_DISCOVERY_URL}
 ETCD_DEBUG=true
 EOF
+
+    # load etcd env
+    . /etc/csphere/csphere-etcd2-agent.env
+	# we setup env ETCD_DISCOVERY only for uninitialized etcd2,
+	# so it won't conflict with etcd flag: ETCD_INITIAL_CLUSTER
+	if [ ! -d "${ETCD_DATA_DIR}/proxy" ] && [ ! -d "${ETCD_DATA_DIR}/member" ] ; then
+		cat << EOF >> /etc/csphere/csphere-etcd2-agent.env
+ETCD_DISCOVERY=${COS_DISCOVERY_URL}
+EOF
+	fi
+
 else
 	echo "CRIT: cos role unknown: (${COS_ROLE})"
 fi
