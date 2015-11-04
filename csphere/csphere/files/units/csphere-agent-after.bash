@@ -9,6 +9,11 @@ FEtcd2AgentEnv="/etc/csphere/csphere-etcd2-agent.env"
 # load install opts file
 . ${FInstOpts}
 
+if [ "${COS_SVRPOOL_ID}" == "csphere-internal" ]; then
+	echo "internal csphere agent with controller, skip."
+	exit 0
+fi
+
 Uuid=
 if [ -f "${FAgentUuid}" -a -s "${FAgentUuid}" ]; then
 	Uuid=$(cat "${FAgentUuid}" 2>&-)
