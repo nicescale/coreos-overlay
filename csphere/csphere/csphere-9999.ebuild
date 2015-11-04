@@ -90,6 +90,7 @@ src_install() {
 	# insinto /usr/lib/csphere/etc/   # effect only: doins, newins
 	into /usr/lib/csphere/etc/
 	dobin "${FILESDIR}/units/csphere-prepare.bash"
+	dobin "${FILESDIR}/units/csphere-agent-after.bash"
 	dobin "${FILESDIR}/strace"   # collision with dev-util/strace-4.6
 
 	# both of controller and agent need
@@ -128,6 +129,7 @@ src_install() {
 
 	dosym /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf 
 	dosym /usr/lib/csphere/etc/bin/csphere-prepare.bash /etc/csphere/csphere-prepare.bash
+	dosym /usr/lib/csphere/etc/bin/csphere-agent-after.bash /etc/csphere/csphere-agent-after.bash
 	# this will lead to file collision with app-misc/mime-types-9:0::portage-stable
 	# dosym /usr/lib/csphere/etc/mime.types /etc/mime.types
 	# dosym /usr/lib/csphere/etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt

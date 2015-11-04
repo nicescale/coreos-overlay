@@ -16,6 +16,8 @@ EnvironmentFile=/etc/csphere/csphere-agent.env
 User=root
 ExecStartPre=/bin/sleep 3s
 ExecStart=/bin/csphere --tls join
+ExecStartPost=/bin/sleep 3s
+ExecStartPost=/etc/csphere/csphere-agent-after.bash
 Restart=always
 RestartSec=3s
 
