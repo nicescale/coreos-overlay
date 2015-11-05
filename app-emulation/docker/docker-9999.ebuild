@@ -15,7 +15,8 @@ if [[ ${PV} == *9999 ]]; then
 	DOCKER_GITCOMMIT=""
 	KEYWORDS=""
 else
-	CROS_WORKON_COMMIT="-"  # tell ebuild to skip another checkout
+	# CROS_WORKON_COMMIT="-"  # tell ebuild to skip another checkout
+	CROS_WORKON_COMMIT="aa45f1caf613a8a2c0c0ee53273d3029df778dd6"  # csphere 1.0.0
 	# DOCKER_GITCOMMIT="${CROS_WORKON_COMMIT:0:7}"  # docker make.sh will auto git rev-parse HEAD
 	KEYWORDS="amd64 arm64"
 fi
