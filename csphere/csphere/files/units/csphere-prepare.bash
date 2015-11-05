@@ -130,6 +130,7 @@ EOF
 
 	# create /etc/csphere/csphere-etcd2-agent.env
 	cat << EOF > /etc/csphere/csphere-etcd2-agent.env
+ETCD_NAME=${COS_ETCD_NAME}
 ETCD_DATA_DIR=/var/lib/etcd2
 ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
 ETCD_INITIAL_ADVERTISE_PEER_URLS=http://${LOCAL_IP}:2380
