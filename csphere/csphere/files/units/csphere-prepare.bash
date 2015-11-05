@@ -191,3 +191,18 @@ if [ ! -e /opt/bin/strace ]; then
 	mkdir -p /opt/bin/
 	ln -sv /usr/lib/csphere/etc/bin/strace  /opt/bin/strace
 fi
+
+# make sure all of symlink prepared
+# as cos update won't create new added symlink
+if [ ! -e /etc/mongodb.conf ]; then
+	ln -sv /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf
+fi
+if [ ! -e /etc/csphere/csphere-prepare.bash ]; then
+	ln -sv /usr/lib/csphere/etc/bin/csphere-prepare.bash /etc/csphere/csphere-prepare.bash
+fi
+if [ ! -e /etc/csphere/csphere-agent-after.bash ]; then
+	ln -sv /usr/lib/csphere/etc/bin/csphere-agent-after.bash /etc/csphere/csphere-agent-after.bash
+fi
+if [ ! -e /etc/csphere/etcd2-proxy2member.bash ]; then
+	ln -sv /usr/lib/csphere/etc/bin/etcd2-proxy2member.bash /etc/csphere/etcd2-proxy2member.bash
+fi
