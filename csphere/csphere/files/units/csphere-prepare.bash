@@ -31,10 +31,22 @@ mask2cidr() {
 
 # write csphere-public.env
 # br0 IPAddress, br0 Netmask, Default Route Gateway
-ipaddr=$( ifconfig br0  2>&- |\
-	awk '($1=="inet"){print $2;exit}' )
+ipaddr=
+for i in `seq 1 10`
+do
+	ipaddr=$( ifconfig br0  2>&- |\
+		awk '($1=="inet"){print $2;exit}' )
+	if [ -z "${ipaddr}" ]; then
+		echo "WARN: no local ipaddr found on br0, waitting for ${i} seconds ..."
+		sleep ${i}s
+	else
+		break
+	fi
+done
+# we stop while networking broken
 if [ -z "${ipaddr}" ]; then
-	echo "WARN: no local ipaddr found on br0"
+	echo "CRIT: no local ipaddr found on br0, abort."
+	exit 1 
 fi
 mask1=$( ifconfig br0  2>&- |\
 	awk '($1=="inet"){print $4;exit}' )
