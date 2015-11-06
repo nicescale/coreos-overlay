@@ -39,33 +39,37 @@ RDEPEND="
 RESTRICT="installsources strip"
 
 src_prepare() {
-	[ -d assets ] && rm -rf assets
-	( gzip -dc ${FILESDIR}/assets-latest.tgz | tar x ) || die "uncompress assets-latest.tgz"
-	cp -r terminal/assets assets/terminal
-	/build/amd64-usr/usr/bin/go-bindata -nomemcopy -prefix=assets \
-		-o views/assets.go -pkg=views ./assets/... || die "go-bindata on assets views"
-	rm -rf assets
+	:
+#	[ -d assets ] && rm -rf assets
+#	( gzip -dc ${FILESDIR}/assets-latest.tgz | tar x ) || die "uncompress assets-latest.tgz"
+#	cp -r terminal/assets assets/terminal
+#	/build/amd64-usr/usr/bin/go-bindata -nomemcopy -prefix=assets \
+#		-o views/assets.go -pkg=views ./assets/... || die "go-bindata on assets views"
+#	rm -rf assets
 }
 
 src_compile() {
-	rm -rf /tmp/src/github.com/nicescale/csphere
-	mkdir -p /tmp/src/github.com/nicescale/csphere 
-	cp -a . /tmp/src/github.com/nicescale/csphere/
+#	rm -rf /tmp/src/github.com/nicescale/csphere
+#	mkdir -p /tmp/src/github.com/nicescale/csphere 
+#	cp -a . /tmp/src/github.com/nicescale/csphere/
 	rm -rf /tmp/etc/
 	mkdir -p /tmp/etc/
 	cp -a ./tools/etc/* /tmp/etc/ || die "copy tools/etc"
-	GIT_COMMIT=$(git rev-parse --short HEAD)
-	PKG=github.com/nicescale/csphere
-	VERSION=$(cat VERSION.txt)
-	GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
-		CGO_ENABLED=0 GOOS=linux \
-		go build -a -installsuffix cgo -ldflags="-X $PKG/version.version '$VERSION' -X $PKG/version.gitCommit '$GIT_COMMIT' -w" \
-		-o /tmp/csphere || die  "build csphere"
-	# cd tools/init/
-	# GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
-		# CGO_ENABLED=0 GOOS=linux \
-		# go build -a -installsuffix cgo -ldflags="-w" \
-		# -o /tmp/csphere-init || die "build csphere-init"
+
+	make local || die "build csphere"
+	cp -af csphere /tmp/csphere
+#	GIT_COMMIT=$(git rev-parse --short HEAD)
+#	PKG=github.com/nicescale/csphere
+#	VERSION=$(cat VERSION.txt)
+#	GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
+#		CGO_ENABLED=0 GOOS=linux \
+#		go build -a -installsuffix cgo -ldflags="-X $PKG/version.version '$VERSION' -X $PKG/version.gitCommit '$GIT_COMMIT' -w" \
+#		-o /tmp/csphere || die  "build csphere"
+#	# cd tools/init/
+#	# GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
+#		# CGO_ENABLED=0 GOOS=linux \
+#		# go build -a -installsuffix cgo -ldflags="-w" \
+#		# -o /tmp/csphere-init || die "build csphere-init"
 	mkdir -p /tmp/csphere-mongo/
 	tar -xzf ${FILESDIR}/csphere-mongo.tgz -C /tmp/csphere-mongo/
 }
