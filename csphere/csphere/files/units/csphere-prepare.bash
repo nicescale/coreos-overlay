@@ -29,6 +29,17 @@ mask2cidr() {
 # load install opts file
 . ${FInstOpts}
 
+# sync br0 ether mac firstly, so dhcp work well
+# promisc br0, setup br0 hw ether mac
+ifconfig br0 promisc
+br0inet="$(brctl show br0 2>&- | awk '($1=="br0" && NF==4){print $NF}')"
+br0inetmac="$(ifconfig "${br0inet}" | awk '(/\<ether\>/){print $2}')"
+if [ -n "${br0inetmac}" ]; then
+	ifconfig br0 hw ether "${br0inetmac}"
+else
+	echo "WARN: br0 hw ether mac Null"
+fi
+
 # write csphere-public.env
 # br0 IPAddress, br0 Netmask, Default Route Gateway
 ipaddr=
@@ -163,18 +174,6 @@ EOF
 
 else
 	echo "CRIT: cos role unknown: (${COS_ROLE})"
-fi
-
-
-# promisc br0
-# setup br0 hw ether mac
-ifconfig br0 promisc
-br0inet="$(brctl show br0 2>&- | awk '($1=="br0" && NF==4){print $NF}')"
-br0inetmac="$(ifconfig "${br0inet}" | awk '(/\<ether\>/){print $2}')"
-if [ -n "${br0inetmac}" ]; then
-	ifconfig br0 hw ether "${br0inetmac}"
-else
-	echo "WARN: br0 hw ether mac Null"
 fi
 
 # create ssl key/cert
