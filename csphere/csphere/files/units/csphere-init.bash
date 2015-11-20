@@ -42,10 +42,12 @@ Options:
 
 Example:
 	initialized as controller:
-	${BASH_SOURCE[0]} --role controller --svrport 80 --clustersize 1
+	${BASH_SOURCE[0]} --role=controller --svrport=80 --clustersize=1
+	${BASH_SOURCE[0]} -r=controller -p=80 -s=1
 
 	initialized as agent:
-	${BASH_SOURCE[0]} --role agent --controller 10.3.1.2:80 --instcode 7823
+	${BASH_SOURCE[0]} --role=agent --controller=10.3.1.2:80 --instcode=7823
+	${BASH_SOURCE[0]} -r=agent -c=10.3.1.2:80 -i=7823
 
 HELP
 	exit 0
@@ -67,8 +69,10 @@ while :; do
 				exit 1
 			fi
 			;;
-		--role=?*)
+		--role=?*|-r=?*)
 			Role=${1#*=}
+			shift 1
+			continue
 			;;
 		-c|--controller)
 			if [ -n $2 ]; then
@@ -80,8 +84,10 @@ while :; do
 				exit 1
 			fi
 			;;
-		--controller=?*)
+		--controller=?*|-c=?*)
 			ControllerAddr=${1#*=}
+			shift 1
+			continue
 			;;
 		-i|--instcode)
 			if [ -n $2 ]; then
@@ -93,11 +99,14 @@ while :; do
 				exit 1
 			fi
 			;;
-		--instcode=*?)
+		--instcode=*?|-i=?*)
 			InstCode=${1#*=}
+			shift 1
+			continue
 			;;
 		-s|--clustersize)
 			if [ -n $2 ]; then
+				echo -e "[$2]"
 				ClusterSize=$2
 				shift 2
 				continue
@@ -106,8 +115,10 @@ while :; do
 				exit 1
 			fi
 			;;
-		--clustersize=?*)
+		--clustersize=?*|-s=?*)
 			ClusterSize=${1#*=}
+			shift 1
+			continue
 			;;
 		-p|--svrport)
 			if [ -n $2 ]; then
@@ -119,8 +130,10 @@ while :; do
 				exit 1
 			fi
 			;;
-		--svrport=?*)
+		--svrport=?*|-p=?*)
 			ControllerPort=${1#*=}
+			shift 1
+			continue
 			;;
 		--)
 			shift
@@ -138,15 +151,27 @@ if [ "${Role}" != "agent" -a "${Role}" != "controller" ]; then
 	exit 1
 fi
 if [ "${Role}" == "agent" ]; then
+	ControllerAddr="${ControllerAddr//[ \t]}"
+	if [ -z "${ControllerAddr}" ]; then
+		echo "--controller require a non-empty option argument"
+		exit 1
+	fi
 	ControllerAddr=$( echo -e "${ControllerAddr}" | sed -e 's#^[ \t]*https*://##g' )
 	if ! ( echo -e "${ControllerAddr}" | grep -E -q "^.+:[1-9]+[0-9]*$" ); then
 		echo "--controller ${ControllerAddr} should be like: ip:port"
+		exit 1
+	fi
+
+	InstCode="${InstCode//[ \t]}"
+	if [ -z "${InstCode}" ]; then
+		echo "--instcode require a non-empty option argument"
 		exit 1
 	fi
 	if ! ( echo -e "${InstCode}" | grep -E -q "^[0-9]{4,4}$" ); then   
 		echo "--instcode ${InstCode} should be four numbers"
 		exit 1
 	fi
+	ClusterSize=
 	ControllerHost=${ControllerAddr%%:*}
 	ControllerPort=${ControllerAddr##*:}
 	SvrPoolID=
@@ -154,7 +179,21 @@ if [ "${Role}" == "agent" ]; then
 	DisvUrl="http://${ControllerHost}:2379/v2/keys/discovery/hellocsphere"
 
 elif [ "${Role}" == "controller" ]; then
+	ControllerPort="${ControllerPort//[ \t]}"
+	if [ -z "${ControllerPort}" ]; then
+		echo "--svrport require a non-empty option argument"
+		exit 1
+	fi
+	if [ -n "${ControllerPort//[0-9]}" ]; then
+		echo "--svrport ${ControllerPort} must be number"
+		exit 1
+	fi
+
 	ClusterSize="${ClusterSize//[ \t]}"
+	if [ -z "${ClusterSize}" ]; then
+		echo "--clustersize require a non-empty option argument"
+		exit 1
+	fi
 	if [ -n "${ClusterSize//[0-9]}" ]; then
 		echo "--clustersize ${ClusterSize} must be odd number"
 		exit 1
@@ -163,17 +202,15 @@ elif [ "${Role}" == "controller" ]; then
 		echo "--clustersize ${ClusterSize} must be odd number"
 		exit 1
 	fi
-	if [ -n "${ControllerPort//[0-9]}" ]; then
-		echo "--svrport ${ControllerPort} must be number"
-		exit 1
-	fi
 
+	InstCode=
 	ControllerHost="127.0.0.1"
 	ControllerAddr="127.0.0.1:${ControllerPort}"
 	SvrPoolID="csphere-internal"
 	AuthKey=$(head -n 100 /dev/urandom|tr -dc 'a-zA-Z0-9'|head -c 32)
 	DisvUrl=
 fi
+
 
 
 #
@@ -206,8 +243,7 @@ fi
 ifconfig br0 hw ether ${br0inetmac}
 systemctl restart systemd-networkd
 
-# make sure ip configs all right
-...
+# make sure ip configs all right ?
 
 # emulate cos install options
 cat > /etc/csphere/inst-opts.env << EOF
