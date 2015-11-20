@@ -1,5 +1,13 @@
 #!/bin/bash
 
+if systemctl is-active csphere-controller >/dev/null 2>&1; then
+	echo -e "initilized as csphere controller before, abort." 
+	exit 1
+elif systemctl is-active csphere-agent >/dev/null 2>&1; then
+	echo -e "initilized as csphere agent before, abort." 
+	exit 1
+fi
+
 # def
 AgentComps=(
 	csphere-prepare.service
