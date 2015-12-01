@@ -13,8 +13,8 @@ CROS_WORKON_REPO="git://github.com"
 if [[ "${PV}" == 9999 ]]; then
     KEYWORDS="~amd64 ~arm64"
 else
-    # CROS_WORKON_COMMIT="-"   # use HEAD, tell ebuild to skip another checkout
-    CROS_WORKON_COMMIT="e93c04df780d99f951891354482f61c91e57eaa0"   # csphere 1.0.0
+    CROS_WORKON_COMMIT="-"   # use HEAD, tell ebuild to skip another checkout
+    # CROS_WORKON_COMMIT="e93c04df780d99f951891354482f61c91e57eaa0"   # csphere 1.0.0
     KEYWORDS="amd64 arm64"
 fi
 
@@ -59,9 +59,9 @@ src_compile() {
 	VERSION=$(cat VERSION.txt)
 
 	# build version > 1.0.0 with vendor
-	# GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/vendor \
+	GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/vendor \
 	# build version 1.0.0 with godep
-	GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
+	# GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
 		CGO_ENABLED=0 GOOS=linux \
 		go build -a -installsuffix nocgo -ldflags="-X $PKG/version.version '$VERSION' -X $PKG/version.gitCommit '$GIT_COMMIT' -w" \
 		-o /tmp/csphere || die  "build csphere"
