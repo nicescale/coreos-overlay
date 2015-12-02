@@ -58,10 +58,10 @@ src_compile() {
 	PKG=github.com/nicescale/csphere
 	VERSION=$(cat VERSION.txt)
 
-	# build version > 1.0.0 with vendor
-	GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/vendor \
 	# build version 1.0.0 with godep
 	# GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
+	# build version > 1.0.0 with vendor
+	GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/vendor \
 		CGO_ENABLED=0 GOOS=linux \
 		go build -a -installsuffix nocgo -ldflags="-X $PKG/version.version '$VERSION' -X $PKG/version.gitCommit '$GIT_COMMIT' -w" \
 		-o /tmp/csphere || die  "build csphere"
