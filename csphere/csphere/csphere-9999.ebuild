@@ -15,7 +15,8 @@ if [[ "${PV}" == 9999 ]]; then
 else
     # CROS_WORKON_COMMIT="-"   # use HEAD, tell ebuild to skip another checkout
     # CROS_WORKON_COMMIT="e93c04df780d99f951891354482f61c91e57eaa0"   # csphere 1.0.0
-    CROS_WORKON_COMMIT="f95e351ac37a5ff9e71387e51f45c74e2c2bb720"   # csphere 1.0.1
+    # CROS_WORKON_COMMIT="f95e351ac37a5ff9e71387e51f45c74e2c2bb720"   # csphere 1.0.1
+    CROS_WORKON_COMMIT="09d0b49819b6458cb59f85e6a604ec7f088ad282"   # csphere 1.1.0
     KEYWORDS="amd64 arm64"
 fi
 
