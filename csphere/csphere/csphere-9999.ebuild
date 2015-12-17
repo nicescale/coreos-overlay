@@ -13,10 +13,10 @@ CROS_WORKON_REPO="git://github.com"
 if [[ "${PV}" == 9999 ]]; then
     KEYWORDS="~amd64 ~arm64"
 else
-    # CROS_WORKON_COMMIT="-"   # use HEAD, tell ebuild to skip another checkout
+    CROS_WORKON_COMMIT="-"   # use HEAD, tell ebuild to skip another checkout
     # CROS_WORKON_COMMIT="e93c04df780d99f951891354482f61c91e57eaa0"   # csphere 1.0.0
     # CROS_WORKON_COMMIT="f95e351ac37a5ff9e71387e51f45c74e2c2bb720"   # csphere 1.0.1
-    CROS_WORKON_COMMIT="0bf22d60d5fe3e044b8f4310412f3fef1825f340"   # csphere 1.1.0
+    # CROS_WORKON_COMMIT="0bf22d60d5fe3e044b8f4310412f3fef1825f340"   # csphere 1.1.0
     KEYWORDS="amd64 arm64"
 fi
 
@@ -67,11 +67,8 @@ src_compile() {
 		CGO_ENABLED=0 GOOS=linux \
 		go build -a -installsuffix nocgo -ldflags="-X $PKG/version.version '$VERSION' -X $PKG/version.gitCommit '$GIT_COMMIT' -w" \
 		-o /tmp/csphere || die  "build csphere"
-	# cd tools/init/
-	# GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
-		# CGO_ENABLED=0 GOOS=linux \
-		# go build -a -installsuffix cgo -ldflags="-w" \
-		# -o /tmp/csphere-init || die "build csphere-init"
+	cp -a ./bin/csphere-quota /tmp/
+	cp -a ./bin/csphere-settc /tmp/
 	mkdir -p /tmp/csphere-mongo/
 	tar -xzf ${FILESDIR}/csphere-mongo.tgz -C /tmp/csphere-mongo/
 }
@@ -82,6 +79,8 @@ src_install() {
 	# newbin /tmp/csphere-init csphere-init
 	newbin /tmp/csphere-mongo/bin/mongod mongod
 	newbin /tmp/csphere-mongo/bin/mongo  mongo
+	newbin /tmp/csphere-quota csphere-quota
+	newbin /tmp/csphere-settc csphere-settc
 
 	dodir /usr/share/oem/lib64/
 	insinto /usr/share/oem/lib64/
