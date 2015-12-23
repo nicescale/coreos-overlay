@@ -12,13 +12,13 @@ Conflicts=docker.service
 [Service]
 Environment=TMPDIR=/var/tmp
 EnvironmentFile=/etc/csphere/csphere-public.env
-EnvironmentFile=-/etc/csphere/csphere-docker-agent.env
+EnvironmentFile=/etc/csphere/csphere-docker-agent.env
 Restart=always
 RestartSec=10s
 MountFlags=slave
 LimitNOFILE=1048576
 LimitNPROC=1048576
-ExecStart=/usr/bin/docker daemon -b br0 --csphere --iptables=false --ip-forward=false --default-gateway=${DEFAULT_GW} --storage-driver=overlay
+ExecStart=/usr/bin/docker $DOCKER_START_OPTS
 				
 
 [Install]

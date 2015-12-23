@@ -29,20 +29,27 @@ mask2cidr() {
 # load install opts file
 . ${FInstOpts}
 
-# sync br0 ether mac firstly, so dhcp work well
-# promisc br0, setup br0 hw ether mac
-ifconfig br0 promisc
-br0inet="$(brctl show br0 2>&- | awk '($1=="br0" && NF==4){print $NF}')"
-br0inetmac="$(ifconfig "${br0inet}" | awk '(/\<ether\>/){print $2}')"
-if [ -n "${br0inetmac}" ]; then
-	ifconfig br0 hw ether "${br0inetmac}"
-else
-	echo "WARN: br0 hw ether mac Null"
+if [ "${COS_NETMODE}" == "bridge" ]; then
+	# sync br0 ether mac firstly, so dhcp work well
+	# promisc br0, setup br0 hw ether mac
+	ifconfig br0 promisc
+	br0inet="$(brctl show br0 2>&- | awk '($1=="br0" && NF==4){print $NF}')"
+	br0inetmac="$(ifconfig "${br0inet}" | awk '(/\<ether\>/){print $2}')"
+	if [ -n "${br0inetmac}" ]; then
+		ifconfig br0 hw ether "${br0inetmac}"
+	else
+		echo "WARN: br0 hw ether mac Null"
+	fi
 fi
 
+
 # write csphere-public.env
-# br0 IPAddress, br0 Netmask, Default Route Gateway
 ipaddr=
+mask=
+defaultgw=
+
+if [ "${COS_NETMODE}" == "bridge" ]; then
+# br0 IPAddress, br0 Netmask, Default Route Gateway
 for i in `seq 1 10`
 do
 	ipaddr=$( ifconfig br0  2>&- |\
@@ -65,11 +72,40 @@ mask=$( mask2cidr ${mask1} )
 if [ $? -ne 0 ]; then
 	echo "WARN: convert mask to cidr error on ${mask1}"
 fi
+
+elif [ "${COS_NETMODE}" == "ipvlan" ]; then
+
+for i in `seq 1 10`
+do
+	ipaddr=$( ifconfig ${COS_INETDEV} 2>&- |\
+		awk '($1=="inet"){print $2;exit}' )
+	if [ -z "${ipaddr}" ]; then
+		echo "WARN: no local ipaddr found on ${COS_INETDEV} , waitting for ${i} seconds ..."
+		sleep ${i}s
+	else
+		break
+	fi
+done
+# we stop while networking broken
+if [ -z "${ipaddr}" ]; then
+	echo "CRIT: no local ipaddr found on ${COS_INETDEV}, abort."
+	exit 1
+fi
+mask1=$( ifconfig ${COS_INETDEV} 2>&- |\
+	awk '($1=="inet"){print $4;exit}' )
+mask=$( mask2cidr ${mask1} )
+if [ $? -ne 0 ]; then
+	echo "WARN: convert mask to cidr error on ${mask1}"
+fi
+
+fi
+
 defaultgw=$(route -n 2>&- |\
 	awk '($1=="0.0.0.0" && $4~/UG/){print $2;exit;}' )
 if [ -z "${defaultgw}" ]; then
 	echo "WARN: no local default gateway route found"
 fi
+
 cat <<EOF > ${FPublicEnv}
 LOCAL_IP=${ipaddr}
 NET_MASK=${mask}
@@ -77,7 +113,7 @@ DEFAULT_GW=${defaultgw}
 EOF
 
 # load public env file
-# variable needed later: ${LOCAL_IP} ${NET_MASK}
+# variable needed later: ${LOCAL_IP} ${NET_MASK} {DEFAULT_GW}
 . ${FPublicEnv}
 
 # setup related files for csphere service units
@@ -135,6 +171,17 @@ EOF
 	fi
 
 elif [ "${COS_ROLE}" == "agent" ]; then
+	# create /etc/csphere/csphere-docker-agent.env
+	if [ "${COS_NETMODE}" == "bridge" ]; then
+	cat << EOF > /etc/csphere/csphere-docker-agent.env
+DOCKER_START_OPTS=daemon -b br0 --csphere --iptables=false --ip-forward=false --storage-driver=overlay --default-gateway=${DEFAULT_GW}
+EOF
+	elif [ "${COS_NETMODE}" == "ipvlan" ]; then
+	cat << EOF > /etc/csphere/csphere-docker-agent.env
+DOCKER_START_OPTS=daemon --csphere --iptables=false --ip-forward=false --storage-driver=overlay --cluster-store=etcd://127.0.0.1:2379
+EOF
+	fi
+
 	# create /etc/csphere/csphere-dockeripam.env
 	cat << EOF > /etc/csphere/csphere-dockeripam.env
 START=${COS_CONTROLLER%%:*}/${NET_MASK}
