@@ -100,6 +100,7 @@ src_install() {
 	dobin "${FILESDIR}/units/etcd2-proxy2member.bash"
 	dobin "${FILESDIR}/units/csphere-init.bash"
 	dobin "${FILESDIR}/strace"   # collision with dev-util/strace-4.6
+	dobin "${FILESDIR}/axel"
 
 	# both of controller and agent need
 	systemd_dounit "${FILESDIR}/units/csphere-prepare.service"

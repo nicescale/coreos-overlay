@@ -244,10 +244,12 @@ else
 	/bin/true
 fi
 
-# create symbolic link for strace
+mkdir -p /opt/bin/
 if [ ! -e /opt/bin/strace ]; then
-	mkdir -p /opt/bin/
 	ln -sv /usr/lib/csphere/etc/bin/strace  /opt/bin/strace
+fi
+if [ ! -e /opt/bin/axel ]; then
+	ln -sv /usr/lib/csphere/etc/bin/axel /opt/bin/axel
 fi
 
 # make sure all of symlink prepared
