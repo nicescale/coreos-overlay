@@ -178,7 +178,7 @@ DOCKER_START_OPTS=daemon -b br0 --csphere --iptables=false --ip-forward=false --
 EOF
 	elif [ "${COS_NETMODE}" == "ipvlan" ]; then
 	cat << EOF > /etc/csphere/csphere-docker-agent.env
-DOCKER_START_OPTS=daemon --csphere --iptables=false --ip-forward=false --storage-driver=overlay --cluster-store=etcd://127.0.0.1:2379
+DOCKER_START_OPTS=daemon --csphere --iptables=false --ip-forward=false --storage-driver=overlay
 EOF
 	fi
 
@@ -196,6 +196,7 @@ CONTROLLER_ADDR=${COS_CONTROLLER}
 DNS_ADDR=${LOCAL_IP}
 AUTH_KEY=${COS_INST_CODE}
 SVRPOOLID=${COS_SVRPOOL_ID}
+DEFAULT_NETWORK=${COS_NETMODE}
 EOF
 
 	# create /etc/csphere/csphere-etcd2-agent.env
