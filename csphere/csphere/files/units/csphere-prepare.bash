@@ -267,3 +267,6 @@ fi
 if [ ! -e /etc/csphere/etcd2-proxy2member.bash ]; then
 	ln -sv /usr/lib/csphere/etc/bin/etcd2-proxy2member.bash /etc/csphere/etcd2-proxy2member.bash
 fi
+if [ ! -e /etc/csphere/csphere-docker-agent-after.bash ]; then
+	ln -sv /usr/lib/csphere/etc/bin/csphere-docker-agent-after.bash  /etc/csphere/csphere-docker-agent-after.bash
+fi
