@@ -19,6 +19,7 @@ MountFlags=slave
 LimitNOFILE=1048576
 LimitNPROC=1048576
 ExecStart=/usr/bin/docker $DOCKER_START_OPTS
+ExecStartPost=/etc/csphere/csphere-docker-agent-after.bash
 				
 
 [Install]
