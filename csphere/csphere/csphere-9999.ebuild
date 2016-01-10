@@ -97,6 +97,7 @@ src_install() {
 	into /usr/lib/csphere/etc/
 	dobin "${FILESDIR}/units/csphere-prepare.bash"
 	dobin "${FILESDIR}/units/csphere-agent-after.bash"
+	dobin "${FILESDIR}/units/csphere-docker-agent-after.bash"
 	dobin "${FILESDIR}/units/etcd2-proxy2member.bash"
 	dobin "${FILESDIR}/units/csphere-init.bash"
 	dobin "${FILESDIR}/strace"   # collision with dev-util/strace-4.6
