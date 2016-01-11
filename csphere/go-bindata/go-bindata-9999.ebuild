@@ -40,6 +40,7 @@ src_compile() {
 	cp -a . /tmp/src/github.com/mountkin/go-bindata
 	cd go-bindata/
 	GOPATH=/tmp go build  -o /tmp/go-bindata
+	git log --pretty=format:"%h - %an, %ai : %s" -1 | tee /tmp/csphere-product-version/csphere-product-go-bindata.txt
 }
 
 src_install() {

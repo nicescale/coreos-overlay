@@ -47,6 +47,7 @@ src_prepare() {
 	cp -r terminal/assets assets/terminal
 	/build/amd64-usr/usr/bin/go-bindata -nomemcopy -prefix=assets \
 		-o views/assets.go -pkg=views ./assets/... || die "go-bindata on assets views"
+	cat assets/build.txt  | tee /tmp/csphere-product-version/csphere-product-csphere-fe.txt
 	rm -rf assets
 }
 
@@ -70,6 +71,7 @@ src_compile() {
 		-o /tmp/csphere || die  "build csphere"
 	cp -a ./bin/csphere-quota /tmp/
 	cp -a ./bin/csphere-settc /tmp/
+	git log --pretty=format:"%h - %an, %ai : %s" -1	| tee /tmp/csphere-product-version/csphere-product-csphere.txt
 	mkdir -p /tmp/csphere-mongo/
 	tar -xzf ${FILESDIR}/csphere-mongo.tgz -C /tmp/csphere-mongo/
 }
