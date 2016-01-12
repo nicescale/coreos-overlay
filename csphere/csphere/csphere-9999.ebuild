@@ -102,6 +102,7 @@ src_install() {
 	dobin "${FILESDIR}/units/csphere-prepare.bash"
 	dobin "${FILESDIR}/units/csphere-agent-after.bash"
 	dobin "${FILESDIR}/units/csphere-docker-agent-after.bash"
+	dobin "${FILESDIR}/units/csphere-skydns-startup.bash"
 	dobin "${FILESDIR}/units/etcd2-proxy2member.bash"
 	dobin "${FILESDIR}/units/csphere-init.bash"
 	dobin "${FILESDIR}/strace"   # collision with dev-util/strace-4.6
@@ -145,6 +146,8 @@ src_install() {
 	dosym /usr/lib/csphere/etc/bin/csphere-prepare.bash /etc/csphere/csphere-prepare.bash
 	dosym /usr/lib/csphere/etc/bin/csphere-agent-after.bash /etc/csphere/csphere-agent-after.bash
 	dosym /usr/lib/csphere/etc/bin/etcd2-proxy2member.bash /etc/csphere/etcd2-proxy2member.bash
+	dosym /usr/lib/csphere/etc/bin/csphere-docker-agent-after.bash /etc/csphere/csphere-docker-agent-after.bash
+	dosym /usr/lib/csphere/etc/bin/csphere-skydns-startup.bash /etc/csphere/csphere-skydns-startup.bash
 	# this will lead to file collision with app-misc/mime-types-9:0::portage-stable
 	# dosym /usr/lib/csphere/etc/mime.types /etc/mime.types
 	# dosym /usr/lib/csphere/etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt

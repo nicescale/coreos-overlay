@@ -187,12 +187,18 @@ DOCKER_START_OPTS=daemon --csphere --iptables=false --ip-forward=false --storage
 EOF
 	fi
 
+	SKYDNS_IP=$( echo -e "${LOCAL_IP}" | awk 'BEGIN{FS=OFS="."}{$NF=$NF+1; print}' )
+	AGENT_DNSIP=${LOCAL_IP}
+	if [ "${COS_NETMODE}" == "ipvlan" ]; then
+		AGENT_DNSIP=${SKYDNS_IP}
+	fi
+
 	# create /etc/csphere/csphere-skydns.env
 	if [ "${COS_NETMODE}" == "bridge" ]; then
 		:> /etc/csphere/csphere-skydns.env
 	elif [ "${COS_NETMODE}" == "ipvlan" ]; then
 		cat << EOF > /etc/csphere/csphere-skydns.env
-SKYDNS_IP=$( echo -e "${LOCAL_IP}" | awk 'BEGIN{FS=OFS="."}{$NF=$NF+1; print}' )
+SKYDNS_IP=${SKYDNS_IP}
 EOF
 	fi
 
@@ -207,7 +213,7 @@ EOF
 	cat << EOF > /etc/csphere/csphere-agent.env
 ROLE=agent
 CONTROLLER_ADDR=${COS_CONTROLLER}
-DNS_ADDR=${LOCAL_IP}
+DNS_ADDR=${AGENT_DNSIP}
 AUTH_KEY=${COS_INST_CODE}
 SVRPOOLID=${COS_SVRPOOL_ID}
 DEFAULT_NETWORK=${COS_NETMODE}
@@ -284,3 +290,7 @@ fi
 if [ ! -e /etc/csphere/csphere-docker-agent-after.bash ]; then
 	ln -sv /usr/lib/csphere/etc/bin/csphere-docker-agent-after.bash  /etc/csphere/csphere-docker-agent-after.bash
 fi
+if [ ! -e /etc/csphere/csphere-skydns-startup.bash ]; then
+	ln -sv /usr/lib/csphere/etc/bin/csphere-skydns-startup.bash /etc/csphere/csphere-skydns-startup.bash
+fi
+
