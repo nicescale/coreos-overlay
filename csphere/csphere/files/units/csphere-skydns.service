@@ -6,10 +6,10 @@ After=csphere-etcd2-agent.service
 [Service]
 User=root
 EnvironmentFile=/etc/csphere/csphere-public.env
-EnvironmentFile=-/etc/csphere/csphere-skydns.env
+EnvironmentFile=/etc/csphere/csphere-skydns.env
 ExecStartPre=/bin/sleep 3s
 ExecStartPre=/bin/etcdctl set /skydns/config '{"domain":"csphere.local.","dns_addr":"0.0.0.0:53"}'
-ExecStart=/bin/skydns -verbose -addr=0.0.0.0:53 -domain="csphere.local." -machines=http://127.0.0.1:2379
+ExecStart=/etc/csphere/csphere-skydns-startup.bash
 Restart=always
 RestartSec=3s
 

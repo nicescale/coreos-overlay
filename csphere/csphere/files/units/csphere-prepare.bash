@@ -106,10 +106,15 @@ if [ -z "${defaultgw}" ]; then
 	echo "WARN: no local default gateway route found"
 fi
 
+IFS=. read -r m0 m1 m2 m3 <<< "$mask1"
+IFS=. read -r i0 i1 i2 i3 <<< "$ipaddr"
+network=$( printf "%d.%d.%d.%d" "$((i0 & m0))" "$((i1 & m1))" "$((i2 & m2))" "$((i3 & m3))" )
+
 cat <<EOF > ${FPublicEnv}
 LOCAL_IP=${ipaddr}
 NET_MASK=${mask}
 DEFAULT_GW=${defaultgw}
+NETWORK=${network}
 EOF
 
 # load public env file
@@ -179,6 +184,15 @@ EOF
 	elif [ "${COS_NETMODE}" == "ipvlan" ]; then
 	cat << EOF > /etc/csphere/csphere-docker-agent.env
 DOCKER_START_OPTS=daemon --csphere --iptables=false --ip-forward=false --storage-driver=overlay
+EOF
+	fi
+
+	# create /etc/csphere/csphere-skydns.env
+	if [ "${COS_NETMODE}" == "bridge" ]; then
+		:> /etc/csphere/csphere-skydns.env
+	elif [ "${COS_NETMODE}" == "ipvlan" ]; then
+		cat << EOF > /etc/csphere/csphere-skydns.env
+SKYDNS_IP=$( echo -e "${LOCAL_IP}" | awk 'BEGIN{FS=OFS="."}{$NF=$NF+1; print}' )
 EOF
 	fi
 
