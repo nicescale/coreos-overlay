@@ -18,7 +18,8 @@ else
     # CROS_WORKON_COMMIT="f95e351ac37a5ff9e71387e51f45c74e2c2bb720"   # csphere 1.0.1
     # CROS_WORKON_COMMIT="0bf22d60d5fe3e044b8f4310412f3fef1825f340"   # csphere 1.1.0
     # CROS_WORKON_COMMIT="a9f2116d9635fff6c54fa5dede7cff28aeaa7dad"   # csphere 1.2.0
-    CROS_WORKON_COMMIT="affa9ea7c4be0320b9c0fa9eae9db17d8c7b81a9"   # csphere 1.2.1
+    #CROS_WORKON_COMMIT="affa9ea7c4be0320b9c0fa9eae9db17d8c7b81a9"   # csphere 1.2.1
+    CROS_WORKON_COMMIT="67d7460719c4ee363977ee0dbb6c54405dbc9f9e"   # csphere 1.2.2
     KEYWORDS="amd64 arm64"
 fi
 
