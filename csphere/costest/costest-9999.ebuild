@@ -38,7 +38,7 @@ RESTRICT="installsources strip"
 
 src_compile() {
 	make build  || die "build costest"
-	git log --pretty=format:"%h - %an, %ai : %s" -1 | tee /tmp/csphere-product-version/csphere-product-costest.txt
+	git log --pretty=format:"%h - %an, %ai : %s" -1 | sudo tee /tmp/csphere-product-version/csphere-product-costest.txt
 	cp -a stress.toml /tmp/stress.toml
 	cp -a costest /tmp/costest
 }

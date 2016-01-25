@@ -197,7 +197,7 @@ src_compile() {
 	# time to build!
 	./hack/make.sh dynbinary || die 'dynbinary failed'
 
-	git log --pretty=format:"%h - %an, %ai : %s" -1 | tee /tmp/csphere-product-version/csphere-product-docker.txt
+	git log --pretty=format:"%h - %an, %ai : %s" -1 | sudo tee /tmp/csphere-product-version/csphere-product-docker.txt
 
 	# TODO get go-md2man and then include the man pages using docs/man/md2man-all.sh
 }
