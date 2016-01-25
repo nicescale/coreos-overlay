@@ -50,7 +50,7 @@ src_compile() {
 			-X main.buildDate '$(date)' \
 			-X main.goVersion 1.4.1 -w"  \
 			-o /tmp/prometheus
-	git log --pretty=format:"%h - %an, %ai : %s" -1 | sudo tee /tmp/csphere-product-version/csphere-product-prometheus.txt
+	git log --pretty=format:"%h - %an, %ai : %s" -1 | tee /tmp/csphere-product-prometheus.txt
 }
 
 src_install() {

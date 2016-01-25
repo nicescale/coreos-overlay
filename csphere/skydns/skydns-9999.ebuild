@@ -41,7 +41,7 @@ src_compile() {
 	GOPATH=/tmp:/tmp/src/github.com/zhang0137/skydns/Godeps/_workspace/ \
 		CGO_ENABLED=0 GOOS=linux  \
 		go build -o /tmp/skydns
-	git log --pretty=format:"%h - %an, %ai : %s" -1 | sudo tee /tmp/csphere-product-version/csphere-product-skydns.txt
+	git log --pretty=format:"%h - %an, %ai : %s" -1 | tee /tmp/csphere-product-skydns.txt
 }
 
 src_install() {

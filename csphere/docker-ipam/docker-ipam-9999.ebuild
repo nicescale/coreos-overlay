@@ -49,7 +49,7 @@ src_compile() {
 		CGO_ENABLED=0 GOOS=linux \
 		go build -a -installsuffix cgo -ldflags=" -X main.gitCommit='$GIT_COMMIT' -w" \
 		-o /tmp/net-plugin || die  "build netplugin"
-	git log --pretty=format:"%h - %an, %ai : %s" -1 | sudo tee /tmp/csphere-product-version/csphere-product-netplugin.txt
+	git log --pretty=format:"%h - %an, %ai : %s" -1 | tee /tmp/csphere-product-netplugin.txt
 }
 
 src_install() {
