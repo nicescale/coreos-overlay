@@ -266,12 +266,7 @@ else
 fi
 
 mkdir -p /opt/bin/
-if [ ! -e /opt/bin/strace ]; then
-	ln -sv /usr/lib/csphere/etc/bin/strace  /opt/bin/strace
-fi
-if [ ! -e /opt/bin/axel ]; then
-	ln -sv /usr/lib/csphere/etc/bin/axel /opt/bin/axel
-fi
+ln -sf /usr/lib/csphere/etc/bin/{axel,bc,dig,host,nc,nslookup,strace,telnet}  /opt/bin/
 
 # make sure all of symlink prepared
 # as cos update won't create new added symlink

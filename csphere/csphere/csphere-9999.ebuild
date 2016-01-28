@@ -106,8 +106,14 @@ src_install() {
 	dobin "${FILESDIR}/units/csphere-skydns-startup.bash"
 	dobin "${FILESDIR}/units/etcd2-proxy2member.bash"
 	dobin "${FILESDIR}/units/csphere-init.bash"
-	dobin "${FILESDIR}/strace"   # collision with dev-util/strace-4.6
-	dobin "${FILESDIR}/axel"
+	dobin "${FILESDIR}/bin/strace"   # collision with dev-util/strace-4.6
+	dobin "${FILESDIR}/bin/axel"
+	dobin "${FILESDIR}/bin/dig"
+	dobin "${FILESDIR}/bin/host"
+	dobin "${FILESDIR}/bin/nslookup"
+	dobin "${FILESDIR}/bin/nc"
+	dobin "${FILESDIR}/bin/telnet"
+	dobin "${FILESDIR}/bin/bc"
 
 	# both of controller and agent need
 	systemd_dounit "${FILESDIR}/units/csphere-prepare.service"
