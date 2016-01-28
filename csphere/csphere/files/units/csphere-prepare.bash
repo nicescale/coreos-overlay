@@ -204,8 +204,6 @@ EOF
 
 	# create /etc/csphere/csphere-dockeripam.env
 	cat << EOF > /etc/csphere/csphere-dockeripam.env
-START=${COS_CONTROLLER%%:*}/${NET_MASK}
-END=${COS_CONTROLLER%%:*}/${NET_MASK}
 DEBUG=true
 EOF
 
