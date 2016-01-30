@@ -26,6 +26,10 @@ mask2cidr() {
     echo -e "$nbits"
 }
 
+# disable user core
+usermod  -L core || true
+systemctl mask system-cloudinit@usr-share-coreos-developer_data.service || true
+
 # load install opts file
 . ${FInstOpts}
 
