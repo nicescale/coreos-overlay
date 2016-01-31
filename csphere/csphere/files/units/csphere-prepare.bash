@@ -33,6 +33,11 @@ systemctl mask system-cloudinit@usr-share-coreos-developer_data.service || true
 # load install opts file
 . ${FInstOpts}
 
+# compatible with old version
+if [ -z "${COS_NETMODE}" ]; then
+	COS_NETMODE="bridge"
+fi
+
 if [ "${COS_NETMODE}" == "bridge" ]; then
 	# sync br0 ether mac firstly, so dhcp work well
 	# promisc br0, setup br0 hw ether mac
