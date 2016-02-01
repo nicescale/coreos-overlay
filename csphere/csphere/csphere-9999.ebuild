@@ -72,7 +72,6 @@ src_compile() {
 		go build -a -installsuffix nocgo -ldflags="-X $PKG/version.version '$VERSION' -X $PKG/version.gitCommit '$GIT_COMMIT' -w" \
 		-o /tmp/csphere || die  "build csphere"
 	cp -a ./bin/csphere-quota /tmp/
-	cp -a ./bin/csphere-settc /tmp/
 	git log --pretty=format:"%h - %an, %ai : %s" -1	| tee /tmp/csphere-product-csphere.txt
 	mkdir -p /tmp/csphere-mongo/
 	tar -xzf ${FILESDIR}/csphere-mongo.tgz -C /tmp/csphere-mongo/
@@ -85,7 +84,6 @@ src_install() {
 	newbin /tmp/csphere-mongo/bin/mongod mongod
 	newbin /tmp/csphere-mongo/bin/mongo  mongo
 	newbin /tmp/csphere-quota csphere-quota
-	newbin /tmp/csphere-settc csphere-settc
 
 	dodir /usr/share/oem/lib64/
 	insinto /usr/share/oem/lib64/
