@@ -189,10 +189,12 @@ elif [ "${COS_ROLE}" == "agent" ]; then
 	if [ "${COS_NETMODE}" == "bridge" ]; then
 	cat << EOF > /etc/csphere/csphere-docker-agent.env
 DOCKER_START_OPTS=daemon -b br0 --csphere --iptables=false --ip-forward=false --storage-driver=overlay --default-gateway=${DEFAULT_GW}
+DEFAULT_NETWORK=${COS_NETMODE}
 EOF
 	elif [ "${COS_NETMODE}" == "ipvlan" ]; then
 	cat << EOF > /etc/csphere/csphere-docker-agent.env
 DOCKER_START_OPTS=daemon --csphere --iptables=false --ip-forward=false --storage-driver=overlay
+DEFAULT_NETWORK=${COS_NETMODE}
 EOF
 	fi
 
