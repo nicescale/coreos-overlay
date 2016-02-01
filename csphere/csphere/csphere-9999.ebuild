@@ -89,6 +89,10 @@ src_install() {
 	insinto /usr/share/oem/lib64/
 	doins -r /tmp/csphere-mongo/lib64/*
 
+	# install to /usr to make cos update effective
+	insinto /usr/lib64/
+	doins -r /tmp/csphere-mongo/libtinfo.so*
+
 	dodir /etc/csphere/
 
 	dodir /usr/lib/csphere/etc/
