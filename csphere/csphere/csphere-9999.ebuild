@@ -85,6 +85,8 @@ src_install() {
 	newbin /tmp/csphere-mongo/bin/mongo  mongo
 	newbin /tmp/csphere-quota csphere-quota
 
+	dodir /usr/share/oem/lib64/
+
 	# direct install into /usr
 	insinto /usr/lib64/
 	doins -r /tmp/csphere-mongo/lib64/*
