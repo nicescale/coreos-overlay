@@ -197,6 +197,7 @@ src_compile() {
 	# time to build!
 	./hack/make.sh dynbinary || die 'dynbinary failed'
 
+	VERSION=$(cat VERSION)
 	cp -a bundles/$VERSION/dynbinary/docker-$VERSION /tmp/docker
 
 	git log --pretty=format:"%h - %an, %ai : %s" -1 | tee /tmp/csphere-product-docker.txt
