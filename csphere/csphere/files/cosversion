@@ -1,0 +1,45 @@
+#!/bin/bash
+
+base="/usr"
+path="/lib/os-release"
+frelease="${base}/${path}"
+
+if [ "$(id -u)" != "0" ]; then
+	echo "root privilege required."
+	exit 1
+fi
+
+if [ ! -e "${frelease}" -o ! -s "${frelease}" ]; then
+	echo "file: [${frelease}] not prepared."
+	exit 1
+fi
+
+active_ver=$(awk -F= '/VERSION=/{print $2}' ${frelease} 2>&-)
+active_dev=$(df --output=source ${base} 2>&- | tail -n1)
+active_flb=$(blkid -o udev "${active_dev}" 2>&- | awk -F= '/^ID_FS_PARTLABEL/{gsub(" ","",$2);print $2}')
+
+if [[ "${active_dev}" =~ 3$ ]]; then
+	inactive_dev="${active_dev/%3/4}"
+elif [[ "${active_dev}" =~ 4$ ]]; then
+	inactive_dev="${active_dev/%4/3}"
+fi
+inactive_flb=$(blkid -o udev "${inactive_dev}" 2>&- | awk -F= '/^ID_FS_PARTLABEL/{gsub(" ","",$2);print $2}')
+tmpdir=$(mktemp -d)
+errstr=$(mount -o ro ${inactive_dev} ${tmpdir} 2>&1 1>/dev/null)
+if [ $? -eq 0 ]; then
+	inactive_ver=$(awk -F= '/VERSION=/{print $2}' ${tmpdir}/${path} 2>&-)
+	umount ${tmpdir}
+	rmdir ${tmpdir}
+else
+	rmdir ${tmpdir}
+	echo "mount inactive dev [${inactive_dev}] failed: ${errstr}"
+	exit 1
+fi
+
+(
+cat << EOS
+Active Device Volumn Version
+YES ${active_dev} ${active_flb} ${active_ver}
+NO  ${inactive_dev} ${inactive_flb} ${inactive_ver}
+EOS
+) | column -t
