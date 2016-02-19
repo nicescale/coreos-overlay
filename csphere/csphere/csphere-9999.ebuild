@@ -81,6 +81,7 @@ src_compile() {
 
 src_install() {
 	newbin ${FILESDIR}/cosversion cosversion
+	newbin ${FILESDIR}/cspherectl cspherectl
 
 	newbin ${FILESDIR}/registry.img  registry.img
 	newbin /tmp/csphere csphere

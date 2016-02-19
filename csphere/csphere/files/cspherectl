@@ -1,0 +1,343 @@
+#!/bin/bash
+
+Role=
+RoleComps=()
+PrintfMaxLen=15
+FInstOpt="/etc/csphere/inst-opts.env"
+AgentComps=(
+	"-"				"csphere-prepare"		"-"
+	"etcd"			"csphere-etcd2-agent"	"etcd2" 
+	"skydns"		"csphere-skydns"		"skydns"
+	"docker-ipam"	"csphere-dockeripam"	"net-plugin"
+	"docker"		"csphere-docker-agent"	"docker"
+	"agent"			"csphere-agent"			"csphere"
+)
+CtlComps=(
+	"-"				"csphere-prepare"			"-"
+	"prometheus"	"csphere-prometheus"		"prometheus"
+	"mongodb"		"csphere-mongodb"			"mongod"
+	"etcd"			"csphere-etcd2-controller"	"etcd2"
+	"docker"		"csphere-docker-controller" "docker"
+	"agent"			"csphere-agent"				"csphere"
+	"controller"	"csphere-controller"		"csphere"
+)
+
+echo_green() {
+  local content=$*
+  echo -e "\033[1;32m${content}\033[0m\c "
+}
+echo_yellow() {
+  local content=$*
+  echo -e "\033[1;33m${content}\033[0m\c "
+}
+echo_red() { 
+  local content=$* 
+  echo -e "\033[1;31m${content}\033[0m\c "
+}
+echo_line() {
+  local line="---------------------"
+  if test "${1}" ; then
+  	echo -en "\n\n${1}\n${line}\n"
+  else
+	echo -en "${line}\n"
+  fi
+}
+
+show_help() {
+cat << EOF
+
+   $(echo_green "Help:")
+	help
+	start		[proc]
+	stop		[proc]
+	status		[proc]
+	restart		[proc]
+	?		show alias
+
+EOF
+exit 0
+}
+
+show_alias() {
+cat << EOF
+
+   $(echo_green "Alias:")
+	start	   => 	a
+	stop	   => 	z, kill, k
+	status	   =>	s, watch, w
+	restart	   =>	r
+
+EOF
+}
+
+# $1 contains $2 or not
+#
+sub_str() {  
+  [ "${1#*$2*}" == "$1" ] && return 1 || return 0
+}
+
+is_comp() {
+	[ $1 == "" ] && return 1
+	for((i=0;i<${#RoleComps[*]};i+=3));do
+		if [ "$1" == "${RoleComps[$i]}" ]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+get_comp() {
+	for((i=0;i<${#RoleComps[*]};i+=3));do
+		if [ "$1" == "${RoleComps[$i]}" ]; then
+			echo "${RoleComps[$i]}" "${RoleComps[$(($i+1))]}" "${RoleComps[$(($i+2))]}"
+		fi
+	done
+}
+
+get_pid(){
+	echo -en "$(systemctl show ${1} -p MainPID | awk -F= '{print $2;exit}')"
+}
+
+is_running(){
+	local comp=$1 pname=$2
+	local pid= rc=
+
+	pid=$(get_pid "${comp}")
+  	if [ -d "/proc/${pid}/" ]; then
+		local cmdline=$(cat "/proc/${pid}/cmdline" 2>&-)
+		if sub_str "${cmdline}" "${pname}";  then
+			return 0	# running
+		else
+			return 2	# fake?
+		fi
+	else
+		return	1		# dead
+  	fi
+}
+
+start_comp() {
+	local dname=$1 comp=$2 pname=$3
+	
+	if [ "${dname}" == "-" ]; then
+		echo -e "Starting ${comp} ... $(echo_yellow "SKIP")"
+		return
+	fi
+
+	echo -en "Starting ${dname} ... "
+	if is_running "${comp}" "${pname}"; then
+		echo -e "$(echo_yellow "SKIP")"
+	else
+		systemctl start "${comp}"
+		wait; sleep 1
+		if is_running "${comp}" "${pname}"; then 
+			echo -e "$(echo_green "OK")"
+		else
+			echo -e "$(echo_red "FAIL")"
+		fi
+	fi
+}
+
+stop_comp(){
+	local dname=$1 comp=$2 pname=$3
+
+	if [ "${dname}" == "-" ]; then
+		echo -e "Stoping ${comp} ... $(echo_yellow "SKIP")"
+		return
+	fi
+
+	echo -en "Stoping ${dname} ... "
+	if is_running "${comp}" "${pname}"; then 
+		systemctl stop "${comp}"
+		wait; sleep 1
+		if is_running "${comp}" "${pnaem}"; then
+			echo -e "$(echo_red "FAIL")"
+		else
+			echo -e "$(echo_green "OK")"
+		fi
+	else
+		echo -e "$(echo_yellow "SKIP")"
+	fi
+}
+
+start(){
+  for ((i=0;i<${#RoleComps[*]};i++))
+  do
+	if (($i%3 == 0)); then
+		start_comp ${RoleComps[$i]} ${RoleComps[$(($i+1))]} ${RoleComps[$(($i+2))]}
+	fi
+  done
+}
+
+stop(){
+  for ((i=0;i<${#RoleComps[*]};i++))
+  do
+	if (($i%3 == 0)); then
+		stop_comp ${RoleComps[$i]} ${RoleComps[$(($i+1))]} ${RoleComps[$(($i+2))]}
+	fi
+  done
+}
+
+status(){
+
+  single(){
+  	local comp=$1 pname=$2 dname=$3
+	local plen=${#dname}
+	local rc=
+	
+	if [  $# -lt 3 ] || [ "${dname}" == "-" ]; then
+		return
+	fi
+
+ 	local len=$(($PrintfMaxLen-$plen))
+
+  	is_running "${comp}" "${pname}"
+  	rc=$?
+  	if [ "$rc" == "0" ]; then
+		local pid=$(get_pid "${comp}")
+		local pstree=$(pstree "${pid}")
+		local pln=$(echo -e "${pstree}" | awk 'END{print NR}')
+		if [ $pln -gt 1 ]; then
+			local l1=$( echo -e "${pstree}" | awk '(NR==1){print}' )
+			printf "${dname} %-${len}s $(echo_green "running") ${pid} ${l1}\n"
+			echo -e "${pstree}" | awk '(NR>1){print}' | while read l
+			do
+				printf "%-$(($PrintfMaxLen+2+7+1+${#pid}))s ${l}\n"
+			done
+		else
+			printf "${dname} %-${len}s $(echo_green "running") ${pid} ${pstree}\n"
+		fi
+  	elif [ "$rc" == "1" ]; then
+		printf "${dname} %-${len}s $(echo_red "dead")\n"
+  	elif [ "$rc" == "2" ]; then
+		printf "${dname} %-${len}s $(echo_yellow "fake?")\n"
+  	fi
+
+	return $rc
+  }
+
+  if [ "$#" == "0" ]; then
+  	local _pname= _dname= _comp=
+  	for ((i=0;i<${#RoleComps[*]};i++))
+  	do
+		if (($i%3 == 0)); then
+			_dname=${RoleComps[$i]}
+		elif (($i%3 == 1)); then
+			_comp=${RoleComps[$i]}
+		elif (($i%3 == 2)); then
+			_pname=${RoleComps[$i]}
+			single "${_comp}" "${_pname}" "${_dname}"
+		fi
+  	done
+  else
+  	local dname=$1 comp= pname=
+	for ((i=0;i<${#RoleComps[*]};i++))
+	do
+		if [ "${RoleComps[$i]}" == "${dname}" ]; then
+			comp="${RoleComps[$i+1]}"
+			pname="${RoleComps[$i+2]}"
+			break
+		fi
+	done
+	single "${comp}" "${pname}" "${dname}"
+  fi
+}
+
+
+
+### Main Body Begin
+
+# 0. check root privileges or not ?
+if [ "$(id -u)" != "0" ]; then
+  echo_red "root privilege required!";echo
+  exit 1
+fi
+
+# 1. set global role
+. ${FInstOpt} 2>/dev/null
+case "${COS_ROLE}" in
+	"controller")
+		Role="${COS_ROLE}"
+		RoleComps=( ${CtlComps[*]} )
+		;;
+	"agent")
+		Role="${COS_ROLE}"
+		RoleComps=( ${AgentComps[*]} )
+		;;
+	*)
+		echo_red "unknown role: [$COS_ROLE]"; echo
+		exit 1
+		;;
+esac
+
+
+# 2. process args
+case "$#" in  
+"1")
+        arg1=$1;
+        case "$arg1" in
+        "help"|"h")
+                show_help    			;;
+	"?"|"/?")
+		show_alias			;;
+	"start"|"a")
+		start
+		wait
+		echo_line "${Role^} Status:"
+		status
+		echo_line
+						;;
+	"stop"|"kill"|"k"|"z")
+		stop
+		wait
+		echo_line "${Role^} Status:"
+		status
+		echo_line
+						;;
+	"status"|"watch"|"s"|"w")
+		echo "${Role^} Status:"
+		echo_line
+		status				
+		echo_line			;;
+	"restart"|"r")
+		stop
+		sleep 1
+		start
+		echo_line "${Role^} Status:"
+		status
+		echo_line
+						;;
+	*)
+		show_help			;;
+	esac
+	;;
+"2")
+	arg1=$1; arg2=$2
+
+	if ! is_comp "${arg2}"; then
+		echo "$(echo_yellow "${arg2}") not component"
+		exit 1
+	fi
+
+	case "$arg1" in
+	"start"|"a")
+		start_comp $(get_comp "${arg2}")
+						;;
+	"stop"|"kill"|"k"|"z")
+		stop_comp  $(get_comp "${arg2}")
+						;;
+	"status"|"watch"|"s"|"w")
+		status "${arg2}"
+						;;
+	"restart"|"r")
+		stop_comp  $(get_comp "${arg2}")
+		sleep 1
+		start_comp $(get_comp "${arg2}")
+						;;
+	*)
+		show_help			;;
+	esac
+	;;
+*)
+	show_help
+	;;
+esac
