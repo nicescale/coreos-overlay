@@ -76,6 +76,31 @@ sub_str() {
   [ "${1#*$2*}" == "$1" ] && return 1 || return 0
 }
 
+secs2dur() {
+	local d=0 h=0 m=0 s=0 secs=$1
+	if [ -z "${secs//[ ]}" -o -n "${secs//[0-9]}" ]; then
+		return
+	fi
+	d=$(( $secs / 86400 ))
+	h=$(( ($secs-$d*86400) / 3600 ))
+	m=$(( ($secs-$d*86400-$h*3600) / 60 ))
+	s=$(( $secs-$d*86400-$h*3600-$m*60 ))
+	local r=
+	if [ $d -ne 0  ]; then
+		r="${r}${d}d"
+	fi
+	if [ $h -ne 0 ]; then
+		[ "$r" == "" ] && r="${h}h" || r="${r},${h}h"
+	fi
+	if [ $m -ne 0 ]; then
+		[ "$r" == "" ] && r="${m}m" || r="${r},${m}m"
+	fi
+	if [ $s -ne 0 ]; then
+		[ "$r" == "" ] && r="${s}s" || r="${r},${s}s"
+	fi
+	echo -en "${r}"
+}
+
 is_comp() {
 	[ $1 == "" ] && return 1
 	for((i=0;i<${#RoleComps[*]};i+=3));do
@@ -96,6 +121,28 @@ get_comp() {
 
 get_pid(){
 	echo -en "$(systemctl show ${1} -p MainPID | awk -F= '{print $2;exit}')"
+}
+
+startat(){
+	echo -en "$(systemctl show ${1} -p ActiveEnterTimestamp | awk -F= '{print $2;exit}')"
+}
+
+deadat() {
+	echo -en "$(systemctl show ${1} -p InactiveEnterTimestamp | awk -F= '{print $2;exit}')"
+}
+
+secs() {
+	local t=$(date -d "$1" +%s 2>&-)
+	local n=$(date +%s 2>&-)
+	if [ -z "${t//[ ]}" -o -n "${t//[0-9]}" -o -z "${n//[ ]}" -o -n "${n//[0-9]}" ]; then
+		return
+	fi
+	local r=$(($n-$t))
+	echo ${r#-} # abs()
+}
+
+get_fdsum() {
+	echo -en "$(/bin/ls /proc/${1}/fd 2>&- | wc -l)"
 }
 
 is_running(){
@@ -180,7 +227,7 @@ stop(){
 status(){
 
   single(){
-  	local comp=$1 pname=$2 dname=$3
+	local dname=$1 comp=$2 pname=$3
 	local plen=${#dname}
 	local rc=
 	
@@ -194,51 +241,39 @@ status(){
   	rc=$?
   	if [ "$rc" == "0" ]; then
 		local pid=$(get_pid "${comp}")
+		local uptime=$( secs2dur $(secs "$(startat "${comp}")") )
+		local fdsum=$(get_fdsum "${pid}")
 		local pstree=$(pstree "${pid}")
 		local pln=$(echo -e "${pstree}" | awk 'END{print NR}')
 		if [ $pln -gt 1 ]; then
 			local l1=$( echo -e "${pstree}" | awk '(NR==1){print}' )
-			printf "${dname} %-${len}s $(echo_green "running") ${pid} ${l1}\n"
+			printf "${dname} %-${len}s $(echo_green "running") ${pid} ${l1} [uptime:${uptime} fds:${fdsum}]\n"
 			echo -e "${pstree}" | awk '(NR>1){print}' | while read l
 			do
 				printf "%-$(($PrintfMaxLen+2+7+1+${#pid}))s ${l}\n"
 			done
 		else
-			printf "${dname} %-${len}s $(echo_green "running") ${pid} ${pstree}\n"
+			printf "${dname} %-${len}s $(echo_green "running") ${pid} ${pstree} [uptime:${uptime} fds:${fdsum}]\n"
 		fi
   	elif [ "$rc" == "1" ]; then
-		printf "${dname} %-${len}s $(echo_red "dead")\n"
+		local downtime=$( secs2dur $(secs "$(deadat "${comp}")") )
+		printf "${dname} %-${len}s $(echo_red "dead") [downtime:${downtime}]\n"
   	elif [ "$rc" == "2" ]; then
-		printf "${dname} %-${len}s $(echo_yellow "fake?")\n"
+		local uptime=$( secs2dur $(secs "$(startat "${comp}")") )
+		local fdsum=$(get_fdsum "${pid}")
+		printf "${dname} %-${len}s $(echo_yellow "fake?") [uptime:${uptime} fds:${fdsum}]\n"
   	fi
 
 	return $rc
   }
 
   if [ "$#" == "0" ]; then
-  	local _pname= _dname= _comp=
-  	for ((i=0;i<${#RoleComps[*]};i++))
+	for ((i=0;i<${#RoleComps[*]};i+=3))
   	do
-		if (($i%3 == 0)); then
-			_dname=${RoleComps[$i]}
-		elif (($i%3 == 1)); then
-			_comp=${RoleComps[$i]}
-		elif (($i%3 == 2)); then
-			_pname=${RoleComps[$i]}
-			single "${_comp}" "${_pname}" "${_dname}"
-		fi
+		single $(get_comp "${RoleComps[$i]}")
   	done
   else
-  	local dname=$1 comp= pname=
-	for ((i=0;i<${#RoleComps[*]};i++))
-	do
-		if [ "${RoleComps[$i]}" == "${dname}" ]; then
-			comp="${RoleComps[$i+1]}"
-			pname="${RoleComps[$i+2]}"
-			break
-		fi
-	done
-	single "${comp}" "${pname}" "${dname}"
+	single $(get_comp "$1")
   fi
 }
 
