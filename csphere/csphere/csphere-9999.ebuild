@@ -89,6 +89,11 @@ src_install() {
 	# newbin /tmp/csphere-init csphere-init
 	newbin /tmp/csphere-mongo/bin/mongod mongod
 	newbin /tmp/csphere-mongo/bin/mongo  mongo
+	newbin /tmp/csphere-mongo/bin/mongodump  mongodump
+	newbin /tmp/csphere-mongo/bin/mongoexport  mongoexport
+	newbin /tmp/csphere-mongo/bin/mongoimport  mongoimport
+	newbin /tmp/csphere-mongo/bin/mongorestore  mongorestore
+	newbin /tmp/csphere-mongo/bin/mongostat mongostat
 	newbin /tmp/csphere-quota csphere-quota
 
 	dodir /usr/share/oem/lib64/
