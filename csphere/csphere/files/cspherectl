@@ -53,6 +53,7 @@ cat << EOF
 	status		[proc]
 	restart		[proc]
 	?		show alias
+	logs        proc
 
 EOF
 exit 0
@@ -368,11 +369,31 @@ case "$#" in
 		sleep 1
 		start_comp $(get_comp "${arg2}")
 						;;
+	"logs"|"l")
+		shift 2;
+		comp=( $(get_comp "${arg2}") )
+		journalctl -u "${comp[1]}"
+						;;
 	*)
 		show_help			;;
 	esac
 	;;
 *)
-	show_help
+	arg1=$1; arg2=$2
+
+	if ! is_comp "${arg2}"; then
+		echo "$(echo_yellow "${arg2}") not component"
+		exit 1
+	fi
+
+	case "$arg1" in
+		"logs"|"l")
+			shift 2;
+			comp=( $(get_comp "${arg2}") )
+			journalctl -u "${comp[1]}" $*
+			;;
+		*)
+		show_help		;;
+	esac
 	;;
 esac
