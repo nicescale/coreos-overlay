@@ -1,0 +1,6 @@
+[Unit]
+Description=Run Csphere Backup Every 60 minutes
+
+[Timer]
+OnBootSec=30
+OnCalendar=*-*-* *:00:00

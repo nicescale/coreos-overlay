@@ -132,8 +132,39 @@ EOF
 
 # setup related files for csphere service units
 if [ "${COS_ROLE}" == "controller" ]; then
+	# setup /etc/ntp.conf
+	[ -L /etc/ntp.conf ] && rm -f /etc/ntp.conf
+	cat << EOF > /etc/ntp.conf
+server 0.pool.ntp.org
+server 1.pool.ntp.org
+server 2.pool.ntp.org
+server 3.pool.ntp.org
+
+restrict default nomodify nopeer noquery limited kod
+restrict ${NETWORK} mask ${mask1} nomodify notrap
+EOF
+
+	# create /etc/csphere/csphere-backup.env
+	cat << EOF > /etc/csphere/csphere-backup.env
+BACKUP_DIR=${BACKUP_DIR:-/backup}
+BACKUP_RESERV_DAY=${BACKUP_RESERV_DAY:-7}
+DISK_RESERV_PCT=${DISK_RESERV_PCT:-10}
+DISK_RESERV_SIZE=${DISK_RESERV_SIZE:-5120}
+EOF
+
+	# compatible with old version
+	if ! systemctl is-enabled ntpd >/dev/null 2>&1; then
+		systemctl enable ntpd.service
+	fi
+	if ! systemctl is-enabled csphere-backup.service >/dev/null 2>&1; then
+		systemctl enable csphere-backup.service
+	fi
+	if ! systemctl is-active csphere-backup.timer >/dev/null 2>&1; then
+		systemctl start csphere-backup.timer
+	fi
+
 	# create /etc/csphere/csphere-etcd2-controller.env
-cat << EOF > /etc/csphere/csphere-etcd2-controller.env
+	cat << EOF > /etc/csphere/csphere-etcd2-controller.env
 ETCD_DATA_DIR=/var/lib/etcd2
 ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
 ETCD_ADVERTISE_CLIENT_URLS=http://${LOCAL_IP}:2379
@@ -185,6 +216,13 @@ EOF
 	fi
 
 elif [ "${COS_ROLE}" == "agent" ]; then
+	# setup /etc/systemd/timesyncd.conf
+	cat << EOF > /etc/systemd/timesyncd.conf
+[Time]
+NTP=${COS_CONTROLLER%%:*}
+FallbackNTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org
+EOF
+
 	# create /etc/csphere/csphere-docker-agent.env
 	if [ "${COS_NETMODE}" == "bridge" ]; then
 	cat << EOF > /etc/csphere/csphere-docker-agent.env
@@ -285,6 +323,9 @@ fi
 if [ ! -e /etc/csphere/csphere-prepare.bash ]; then
 	ln -sv /usr/lib/csphere/etc/bin/csphere-prepare.bash /etc/csphere/csphere-prepare.bash
 fi
+if [ ! -e /etc/csphere/csphere-backup.bash ]; then
+	ln -sv /usr/lib/csphere/etc/bin/csphere-backup.bash /etc/csphere/csphere-backup.bash
+fi
 if [ ! -e /etc/csphere/csphere-agent-after.bash ]; then
 	ln -sv /usr/lib/csphere/etc/bin/csphere-agent-after.bash /etc/csphere/csphere-agent-after.bash
 fi
@@ -297,4 +338,3 @@ fi
 if [ ! -e /etc/csphere/csphere-skydns-startup.bash ]; then
 	ln -sv /usr/lib/csphere/etc/bin/csphere-skydns-startup.bash /etc/csphere/csphere-skydns-startup.bash
 fi
-

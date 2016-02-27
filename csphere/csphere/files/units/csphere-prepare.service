@@ -2,6 +2,7 @@
 Description=Csphere Prepare Work
 After=systemd-networkd-wait-online.service
 Wants=systemd-networkd-wait-online.service
+Before=ntpd.service systemd-timesyncd.service
 
 [Service]
 User=root

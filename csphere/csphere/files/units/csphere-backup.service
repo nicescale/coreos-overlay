@@ -1,0 +1,13 @@
+[Unit]
+Description=Csphere Backup Work
+After=csphere-mongodb.service csphere-prometheus.service csphere-etcd2-controller.service
+
+[Service]
+EnvironmentFile=/etc/csphere/csphere-public.env
+EnvironmentFile=/etc/csphere/csphere-backup.env
+User=root
+Type=oneshot
+ExecStart=/etc/csphere/csphere-backup.bash
+
+[Install]
+WantedBy=multi-user.target

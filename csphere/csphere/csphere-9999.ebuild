@@ -112,6 +112,7 @@ src_install() {
 	# insinto /usr/lib/csphere/etc/   # effect only: doins, newins
 	into /usr/lib/csphere/etc/
 	dobin "${FILESDIR}/units/csphere-prepare.bash"
+	dobin "${FILESDIR}/units/csphere-backup.bash"
 	dobin "${FILESDIR}/units/csphere-agent-after.bash"
 	dobin "${FILESDIR}/units/csphere-docker-agent-after.bash"
 	dobin "${FILESDIR}/units/csphere-skydns-startup.bash"
@@ -136,6 +137,8 @@ src_install() {
 	systemd_dounit "${FILESDIR}/units/csphere-etcd2-controller.service"
 	systemd_dounit "${FILESDIR}/units/csphere-docker-controller.service"
 	systemd_dounit "${FILESDIR}/units/csphere-controller.service"
+	systemd_dounit "${FILESDIR}/units/csphere-backup.service"
+	systemd_dounit "${FILESDIR}/units/csphere-backup.timer"
 
 	# only agent need
 	systemd_dounit "${FILESDIR}/units/csphere-etcd2-agent.service"
@@ -162,6 +165,7 @@ src_install() {
 
 	dosym /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf 
 	dosym /usr/lib/csphere/etc/bin/csphere-prepare.bash /etc/csphere/csphere-prepare.bash
+	dosym /usr/lib/csphere/etc/bin/csphere-backup.bash /etc/csphere/csphere-backup.bash
 	dosym /usr/lib/csphere/etc/bin/csphere-agent-after.bash /etc/csphere/csphere-agent-after.bash
 	dosym /usr/lib/csphere/etc/bin/etcd2-proxy2member.bash /etc/csphere/etcd2-proxy2member.bash
 	dosym /usr/lib/csphere/etc/bin/csphere-docker-agent-after.bash /etc/csphere/csphere-docker-agent-after.bash
