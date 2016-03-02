@@ -40,7 +40,7 @@ src_compile() {
 	cp -a . /tmp/src/github.com/zhang0137/skydns
 	GOPATH=/tmp:/tmp/src/github.com/zhang0137/skydns/Godeps/_workspace/ \
 		CGO_ENABLED=0 GOOS=linux  \
-		go build -o /tmp/skydns
+		go build -o /tmp/skydns # rpm: /tmp/skydns
 	git log --pretty=format:"%h - %an, %ai : %s" -1 | tee /tmp/csphere-product-skydns.txt
 }
 

@@ -70,14 +70,28 @@ src_compile() {
 	# build version > 1.0.0 with vendor
 	GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/vendor \
 		CGO_ENABLED=0 GOOS=linux \
-		go build -a -installsuffix nocgo -ldflags="-X $PKG/version.version '$VERSION' -X $PKG/version.gitCommit '$GIT_COMMIT' -w" \
-		-o /tmp/csphere || die  "build csphere"
-	cp -a ./bin/csphere-quota /tmp/
+		go build -a -installsuffix nocgo \
+		-ldflags="-X $PKG/version.version '$VERSION' -X $PKG/version.gitCommit '$GIT_COMMIT' -w" \
+		-o /tmp/csphere || die  "build csphere"   # rpm: /tmp/csphere
+
+	rm -rf /tmp/csphere-quota
+	cp -a ./bin/csphere-quota /tmp/    # rpm: /tmp/csphere-quota
+
 	rm -rf /tmp/units/
 	cp -a ${FILESDIR}/units/ /tmp/
-	git log --pretty=format:"%h - %an, %ai : %s" -1	| tee /tmp/csphere-product-csphere.txt
+
+	rm -rf /tmp/registry.img
+	cp -a ${FILESDIR}/registry.img /tmp/  # rpm: /tmp/registry.img
+
+	rm -rf /tmp/csphere-mongo/
 	mkdir -p /tmp/csphere-mongo/
+	# rpm: /tmp/csphere-mongo/bin/{mongo,mongod,mongodump,mongoexport,mongoimport,mongorestore,mongostat}
 	tar -xzf ${FILESDIR}/csphere-mongo.tgz -C /tmp/csphere-mongo/
+
+	rm -rf /tmp/cspherectl
+	cp -a ${FILESDIR}/cspherectl /tmp  # rpm: /tmp/cspherectl
+
+	git log --pretty=format:"%h - %an, %ai : %s" -1	| tee /tmp/csphere-product-csphere.txt
 }
 
 src_install() {
@@ -86,7 +100,6 @@ src_install() {
 
 	newbin ${FILESDIR}/registry.img  registry.img
 	newbin /tmp/csphere csphere
-	# newbin /tmp/csphere-init csphere-init
 	newbin /tmp/csphere-mongo/bin/mongod mongod
 	newbin /tmp/csphere-mongo/bin/mongo  mongo
 	newbin /tmp/csphere-mongo/bin/mongodump  mongodump
@@ -163,7 +176,6 @@ src_install() {
 	#	csphere-docker-agent.service
 	#	csphere-agent.service  (require network-online)
 
-	dosym /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf 
 	dosym /usr/lib/csphere/etc/bin/csphere-prepare.bash /etc/csphere/csphere-prepare.bash
 	dosym /usr/lib/csphere/etc/bin/csphere-backup.bash /etc/csphere/csphere-backup.bash
 	dosym /usr/lib/csphere/etc/bin/csphere-agent-after.bash /etc/csphere/csphere-agent-after.bash

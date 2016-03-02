@@ -76,10 +76,10 @@ if [ "${COS_ROLE}" == "controller" ]; then
 	done
 	# we stop while networking broken
 	if [ -z "${ipaddr}" ]; then
-		echo "CRIT: no local ipaddr found on ${COS_INETDEV}, abort."
+		echo "CRIT: no local ipaddr found on br0, abort."
 		exit 1
 	fi
-	mask1=$( ifconfig ${COS_INETDEV} 2>&- |\
+	mask1=$( ifconfig br0 2>&- |\
 		awk '($1=="inet"){print $4;exit}' )
 	mask=$( mask2cidr ${mask1} )
 	if [ $? -ne 0 ]; then
@@ -218,6 +218,18 @@ ROLE=agent
 CONTROLLER_ADDR=${LOCAL_IP}:${COS_CONTROLLER_PORT}
 AUTH_KEY=${COS_AUTH_KEY}
 SVRPOOLID=${COS_SVRPOOL_ID}
+EOF
+
+	# setup /etc/mongodb.conf
+	[ -L /etc/mongodb.conf ] && rm -f /etc/mongodb.conf
+	cat << EOF > /etc/mongodb.conf
+dbpath=/data/db
+logpath=/data/logs/mongodb.log
+logappend=true
+bind_ip = 127.0.0.1
+port = 27017
+journal=true
+smallfiles=true
 EOF
 
 	# create /etc/prometheus.yml
