@@ -47,7 +47,7 @@ src_compile() {
 	fi
 	GOPATH=/tmp:/tmp/src/github.com/nicescale/netplugin/Godeps/_workspace/ \
 		CGO_ENABLED=0 GOOS=linux \
-		go build -a -installsuffix cgo -ldflags=" -X main.gitCommit='$GIT_COMMIT' -w" \
+		go build -a -installsuffix cgo -ldflags=" -X main.gitCommit '$GIT_COMMIT' -w" \
 		-o /tmp/net-plugin || die  "build netplugin"
 	git log --pretty=format:"%h - %an, %ai : %s" -1 | tee /tmp/csphere-product-netplugin.txt
 }
