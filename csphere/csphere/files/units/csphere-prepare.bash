@@ -27,8 +27,11 @@ mask2cidr() {
 }
 
 # disable user core
-usermod  -L core || true
-systemctl mask system-cloudinit@usr-share-coreos-developer_data.service || true
+os=$( awk -F= '(/^NAME=/){print $2;exit}' /etc/os-release 2>&-)
+if [ "${os}" == "COS" ]; then
+	usermod  -L core || true
+	systemctl mask system-cloudinit@usr-share-coreos-developer_data.service || true
+fi
 
 # load install opts file
 . ${FInstOpts}
@@ -38,7 +41,7 @@ if [ -z "${COS_NETMODE}" ]; then
 	COS_NETMODE="bridge"
 fi
 
-if [ "${COS_NETMODE}" == "bridge" ]; then
+if [ "${COS_NETMODE}" == "bridge" -a "${COS_ROLE}" == "agent" ]; then
 	# sync br0 ether mac firstly, so dhcp work well
 	# promisc br0, setup br0 hw ether mac
 	ifconfig br0 promisc
@@ -54,58 +57,84 @@ fi
 
 # write csphere-public.env
 ipaddr=
+mask1=
 mask=
 defaultgw=
 
-if [ "${COS_NETMODE}" == "bridge" ]; then
-# br0 IPAddress, br0 Netmask, Default Route Gateway
-for i in `seq 1 10`
-do
-	ipaddr=$( ifconfig br0  2>&- |\
-		awk '($1=="inet"){print $2;exit}' )
+# get controller ip/mask
+if [ "${COS_ROLE}" == "controller" ]; then
+	for i in `seq 1 10`
+	do
+		ipaddr=$( ifconfig br0 2>&- |\
+			awk '($1=="inet"){print $2;exit}' )
+		if [ -z "${ipaddr}" ]; then
+			echo "WARN: no local ipaddr found on br0, waitting for ${i} seconds ..."
+			sleep ${i}s
+		else
+			break
+		fi
+	done
+	# we stop while networking broken
 	if [ -z "${ipaddr}" ]; then
-		echo "WARN: no local ipaddr found on br0, waitting for ${i} seconds ..."
-		sleep ${i}s
-	else
-		break
+		echo "CRIT: no local ipaddr found on ${COS_INETDEV}, abort."
+		exit 1
 	fi
-done
-# we stop while networking broken
-if [ -z "${ipaddr}" ]; then
-	echo "CRIT: no local ipaddr found on br0, abort."
-	exit 1 
-fi
-mask1=$( ifconfig br0  2>&- |\
-	awk '($1=="inet"){print $4;exit}' )
-mask=$( mask2cidr ${mask1} )
-if [ $? -ne 0 ]; then
-	echo "WARN: convert mask to cidr error on ${mask1}"
-fi
+	mask1=$( ifconfig ${COS_INETDEV} 2>&- |\
+		awk '($1=="inet"){print $4;exit}' )
+	mask=$( mask2cidr ${mask1} )
+	if [ $? -ne 0 ]; then
+		echo "WARN: convert mask to cidr error on ${mask1}"
+	fi
+
+# get agent ip/mask <bridge/ipvlan>
+elif [ "${COS_NETMODE}" == "bridge" ]; then
+	for i in `seq 1 10`
+	do
+		ipaddr=$( ifconfig br0  2>&- |\
+			awk '($1=="inet"){print $2;exit}' )
+		if [ -z "${ipaddr}" ]; then
+			echo "WARN: no local ipaddr found on br0, waitting for ${i} seconds ..."
+			sleep ${i}s
+		else
+			break
+		fi
+	done
+	# we stop while networking broken
+	if [ -z "${ipaddr}" ]; then
+		echo "CRIT: no local ipaddr found on br0, abort."
+		exit 1
+	fi
+	mask1=$( ifconfig br0  2>&- |\
+		awk '($1=="inet"){print $4;exit}' )
+	mask=$( mask2cidr ${mask1} )
+	if [ $? -ne 0 ]; then
+		echo "WARN: convert mask to cidr error on ${mask1}"
+	fi
 
 elif [ "${COS_NETMODE}" == "ipvlan" ]; then
 
-for i in `seq 1 10`
-do
-	ipaddr=$( ifconfig ${COS_INETDEV} 2>&- |\
-		awk '($1=="inet"){print $2;exit}' )
+	for i in `seq 1 10`
+	do
+		ipaddr=$( ifconfig ${COS_INETDEV} 2>&- |\
+			awk '($1=="inet"){print $2;exit}' )
+		if [ -z "${ipaddr}" ]; then
+			echo "WARN: no local ipaddr found on ${COS_INETDEV} , waitting for ${i} seconds ..."
+			sleep ${i}s
+		else
+			break
+		fi
+	done
+	# we stop while networking broken
 	if [ -z "${ipaddr}" ]; then
-		echo "WARN: no local ipaddr found on ${COS_INETDEV} , waitting for ${i} seconds ..."
-		sleep ${i}s
-	else
-		break
+		echo "CRIT: no local ipaddr found on ${COS_INETDEV}, abort."
+		exit 1
 	fi
-done
-# we stop while networking broken
-if [ -z "${ipaddr}" ]; then
-	echo "CRIT: no local ipaddr found on ${COS_INETDEV}, abort."
-	exit 1
-fi
-mask1=$( ifconfig ${COS_INETDEV} 2>&- |\
-	awk '($1=="inet"){print $4;exit}' )
-mask=$( mask2cidr ${mask1} )
-if [ $? -ne 0 ]; then
-	echo "WARN: convert mask to cidr error on ${mask1}"
-fi
+	mask1=$( ifconfig ${COS_INETDEV} 2>&- |\
+		awk '($1=="inet"){print $4;exit}' )
+	mask=$( mask2cidr ${mask1} )
+	if [ $? -ne 0 ]; then
+		echo "WARN: convert mask to cidr error on ${mask1}"
+	fi
 
 fi
 
@@ -318,23 +347,37 @@ ln -sf /usr/lib/csphere/etc/bin/{axel,bc,dig,host,nc,nslookup,strace,telnet}  /o
 # make sure all of symlink prepared
 # as cos update won't create new added symlink
 if [ ! -e /etc/mongodb.conf ]; then
-	ln -sv /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf
+	if [ -e /usr/lib/csphere/etc/mongodb.conf ]; then
+		ln -sv /usr/lib/csphere/etc/mongodb.conf  /etc/mongodb.conf
+	fi
 fi
 if [ ! -e /etc/csphere/csphere-prepare.bash ]; then
-	ln -sv /usr/lib/csphere/etc/bin/csphere-prepare.bash /etc/csphere/csphere-prepare.bash
+	if [ -e /usr/lib/csphere/etc/bin/csphere-prepare.bash ]; then
+		ln -sv /usr/lib/csphere/etc/bin/csphere-prepare.bash /etc/csphere/csphere-prepare.bash
+	fi
 fi
 if [ ! -e /etc/csphere/csphere-backup.bash ]; then
-	ln -sv /usr/lib/csphere/etc/bin/csphere-backup.bash /etc/csphere/csphere-backup.bash
+	if [ -e /usr/lib/csphere/etc/bin/csphere-backup.bash ]; then
+		ln -sv /usr/lib/csphere/etc/bin/csphere-backup.bash /etc/csphere/csphere-backup.bash
+	fi
 fi
 if [ ! -e /etc/csphere/csphere-agent-after.bash ]; then
-	ln -sv /usr/lib/csphere/etc/bin/csphere-agent-after.bash /etc/csphere/csphere-agent-after.bash
+	if [ -e /usr/lib/csphere/etc/bin/csphere-agent-after.bash ]; then
+		ln -sv /usr/lib/csphere/etc/bin/csphere-agent-after.bash /etc/csphere/csphere-agent-after.bash
+	fi
 fi
 if [ ! -e /etc/csphere/etcd2-proxy2member.bash ]; then
-	ln -sv /usr/lib/csphere/etc/bin/etcd2-proxy2member.bash /etc/csphere/etcd2-proxy2member.bash
+	if [ -e /usr/lib/csphere/etc/bin/etcd2-proxy2member.bash ]; then
+		ln -sv /usr/lib/csphere/etc/bin/etcd2-proxy2member.bash /etc/csphere/etcd2-proxy2member.bash
+	fi
 fi
 if [ ! -e /etc/csphere/csphere-docker-agent-after.bash ]; then
-	ln -sv /usr/lib/csphere/etc/bin/csphere-docker-agent-after.bash  /etc/csphere/csphere-docker-agent-after.bash
+	if [ -e /usr/lib/csphere/etc/bin/csphere-docker-agent-after.bash ]; then
+		ln -sv /usr/lib/csphere/etc/bin/csphere-docker-agent-after.bash  /etc/csphere/csphere-docker-agent-after.bash
+	fi
 fi
 if [ ! -e /etc/csphere/csphere-skydns-startup.bash ]; then
-	ln -sv /usr/lib/csphere/etc/bin/csphere-skydns-startup.bash /etc/csphere/csphere-skydns-startup.bash
+	if [ -e /usr/lib/csphere/etc/bin/csphere-skydns-startup.bash ]; then
+		ln -sv /usr/lib/csphere/etc/bin/csphere-skydns-startup.bash /etc/csphere/csphere-skydns-startup.bash
+	fi
 fi
