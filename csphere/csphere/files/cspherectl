@@ -103,7 +103,7 @@ secs2dur() {
 }
 
 is_comp() {
-	[ $1 == "" ] && return 1
+	[ "$1" == "" ] && return 1
 	for((i=0;i<${#RoleComps[*]};i+=3));do
 		if [ "$1" == "${RoleComps[$i]}" ]; then
 			return 0
@@ -308,6 +308,8 @@ esac
 
 # 2. process args
 case "$#" in  
+"0")
+	show_help	;;
 "1")
         arg1=$1;
         case "$arg1" in
