@@ -26,8 +26,15 @@ mask2cidr() {
     echo -e "$nbits"
 }
 
-# disable user core
+# detect the real os name
 os=$( awk -F= '(/^NAME=/){print $2;exit}' /etc/os-release 2>&-)
+if awk '($2=="/usr"){if($4~/\<ro\>/){exit 0}else{exit 1} }' /proc/mounts 2>/dev/null; then
+	os="COS"
+else
+	os="CentOS" # maybe fake as COS
+fi
+
+# disable user core
 if [ "${os}" == "COS" ]; then
 	usermod  -L core || true
 	systemctl mask system-cloudinit@usr-share-coreos-developer_data.service || true
