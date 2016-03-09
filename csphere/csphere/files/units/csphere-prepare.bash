@@ -362,6 +362,10 @@ else
 	/bin/true
 fi
 
+cat > /usr/share/oem/grub.cfg << EOF
+set linux_append="rootflags=data=journal"
+EOF
+
 mkdir -p /opt/bin/
 ln -sf /usr/lib/csphere/etc/bin/{axel,bc,dig,host,nc,nslookup,strace,telnet}  /opt/bin/
 
