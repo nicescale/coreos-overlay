@@ -140,6 +140,7 @@ src_install() {
 	dobin "${FILESDIR}/bin/nc"
 	dobin "${FILESDIR}/bin/telnet"
 	dobin "${FILESDIR}/bin/bc"
+	dobin "${FILESDIR}/bin/fusermount"
 
 	# both of controller and agent need
 	systemd_dounit "${FILESDIR}/units/csphere-prepare.service"
