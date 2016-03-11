@@ -99,6 +99,9 @@ src_install() {
 	newbin ${FILESDIR}/cosversion cosversion
 	newbin ${FILESDIR}/cspherectl cspherectl
 
+	# installl fusermount to /bin
+	newbin ${FILESDIR}/bin/fusermount fusermount
+
 	newbin ${FILESDIR}/registry.img  registry.img
 	newbin /tmp/csphere csphere
 	newbin /tmp/csphere-mongo/bin/mongod mongod
@@ -140,7 +143,6 @@ src_install() {
 	dobin "${FILESDIR}/bin/nc"
 	dobin "${FILESDIR}/bin/telnet"
 	dobin "${FILESDIR}/bin/bc"
-	dobin "${FILESDIR}/bin/fusermount"
 
 	# both of controller and agent need
 	systemd_dounit "${FILESDIR}/units/csphere-prepare.service"

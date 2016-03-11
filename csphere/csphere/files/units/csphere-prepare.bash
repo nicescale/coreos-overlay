@@ -367,7 +367,7 @@ set linux_append="rootflags=data=journal"
 EOF
 
 mkdir -p /opt/bin/
-ln -sf /usr/lib/csphere/etc/bin/{axel,bc,dig,host,nc,nslookup,strace,telnet,fusermount}  /opt/bin/
+ln -sf /usr/lib/csphere/etc/bin/{axel,bc,dig,host,nc,nslookup,strace,telnet}  /opt/bin/
 
 # make sure all of symlink prepared
 # as cos update won't create new added symlink
