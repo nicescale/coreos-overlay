@@ -9,6 +9,7 @@ EnvironmentFile=-/etc/csphere/csphere-mongodb.env
 ExecStartPre=/bin/mkdir -p /data/db
 ExecStartPre=/bin/mkdir -p /data/logs
 ExecStart=/bin/mongod --quiet --config /etc/mongodb.conf
+ExecStop=/bin/mongod --config /etc/mongodb.conf --shutdown
 Restart=always
 RestartSec=10s
 
