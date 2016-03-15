@@ -38,6 +38,14 @@ fi
 if [ "${os}" == "COS" ]; then
 	usermod  -L core || true
 	systemctl mask system-cloudinit@usr-share-coreos-developer_data.service || true
+	systemctl mask docker.socket || true
+fi
+
+# ensure sshd.socket
+if [ "${os}" == "COS" ]; then
+	if ! systemctl is-active sshd.socket; then
+		systemctl start sshd.socket || true
+	fi
 fi
 
 # load install opts file
