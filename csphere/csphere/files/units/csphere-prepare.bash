@@ -76,33 +76,8 @@ mask1=
 mask=
 defaultgw=
 
-# get controller ip/mask
-if [ "${COS_ROLE}" == "controller" ]; then
-	for i in `seq 1 10`
-	do
-		ipaddr=$( ifconfig br0 2>&- |\
-			awk '($1=="inet"){print $2;exit}' )
-		if [ -z "${ipaddr}" ]; then
-			echo "WARN: no local ipaddr found on br0, waitting for ${i} seconds ..."
-			sleep ${i}s
-		else
-			break
-		fi
-	done
-	# we stop while networking broken
-	if [ -z "${ipaddr}" ]; then
-		echo "CRIT: no local ipaddr found on br0, abort."
-		exit 1
-	fi
-	mask1=$( ifconfig br0 2>&- |\
-		awk '($1=="inet"){print $4;exit}' )
-	mask=$( mask2cidr ${mask1} )
-	if [ $? -ne 0 ]; then
-		echo "WARN: convert mask to cidr error on ${mask1}"
-	fi
-
-# get agent ip/mask <bridge/ipvlan>
-elif [ "${COS_NETMODE}" == "bridge" ]; then
+# get ip/mask <bridge/ipvlan>
+if [ "${COS_NETMODE}" == "bridge" ]; then
 	for i in `seq 1 10`
 	do
 		ipaddr=$( ifconfig br0  2>&- |\
