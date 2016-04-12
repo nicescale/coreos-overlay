@@ -89,6 +89,10 @@ src_compile() {
 	# rpm: /tmp/csphere-mongo/bin/{mongo,mongod,mongodump,mongoexport,mongoimport,mongorestore,mongostat}
 	tar -xzf ${FILESDIR}/csphere-mongo.tgz -C /tmp/csphere-mongo/
 
+	rm -rf /tmp/svn
+	mkdir -p /tmp/svn
+	tar -xzf ${FILESDIR}/svn.tgz -C /tmp/svn
+
 	rm -rf /tmp/cspherectl
 	cp -a ${FILESDIR}/cspherectl /tmp  # rpm: /tmp/cspherectl
 
@@ -112,12 +116,14 @@ src_install() {
 	newbin /tmp/csphere-mongo/bin/mongorestore  mongorestore
 	newbin /tmp/csphere-mongo/bin/mongostat mongostat
 	newbin /tmp/csphere-quota csphere-quota
+	newbin /tmp/svn/bin/svn svn
 
 	dodir /usr/share/oem/lib64/
 
 	# direct install into /usr
 	insinto /usr/lib64/
 	doins -r /tmp/csphere-mongo/lib64/*
+	doins -r /tmp/svn/lib64/*
 
 	dodir /etc/csphere/
 
