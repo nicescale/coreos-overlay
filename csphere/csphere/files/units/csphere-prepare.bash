@@ -51,6 +51,13 @@ fi
 # load install opts file
 . ${FInstOpts}
 
+# ensure systemd-timesyncd.service
+if [ "${COS_ROLE}" == "agent" ]; then
+	if systemctl is-active systemd-timesyncd.service; then
+		systemctl start systemd-timesyncd.service || true
+	fi
+fi
+
 # compatible with old version
 if [ -z "${COS_NETMODE}" ]; then
 	COS_NETMODE="bridge"
