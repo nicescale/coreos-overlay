@@ -52,8 +52,14 @@ fi
 . ${FInstOpts}
 
 # ensure systemd-timesyncd.service
-if [ "${COS_ROLE}" == "agent" ]; then
-	if systemctl is-active systemd-timesyncd.service; then
+if [ "${COS_ROLE}" == "agent" -a "${os}" == "COS" ]; then
+	# setup /etc/systemd/timesyncd.conf
+	cat << EOF > /etc/systemd/timesyncd.conf
+[Time]
+NTP=${COS_CONTROLLER%%:*}
+FallbackNTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org
+EOF
+	if ! systemctl is-active systemd-timesyncd.service; then
 		systemctl start systemd-timesyncd.service || true
 	fi
 fi
@@ -254,15 +260,6 @@ EOF
 	fi
 
 elif [ "${COS_ROLE}" == "agent" ]; then
-	if [ "${os}" == "COS" ]; then
-		# setup /etc/systemd/timesyncd.conf
-		cat << EOF > /etc/systemd/timesyncd.conf
-[Time]
-NTP=${COS_CONTROLLER%%:*}
-FallbackNTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org
-EOF
-	fi
-
 	# create /etc/csphere/csphere-docker-agent.env
 	if [ "${COS_NETMODE}" == "bridge" ]; then
 	cat << EOF > /etc/csphere/csphere-docker-agent.env
