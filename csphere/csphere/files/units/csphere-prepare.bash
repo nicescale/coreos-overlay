@@ -28,7 +28,8 @@ mask2cidr() {
 
 # detect the real os name
 os=$( awk -F= '(/^NAME=/){print $2;exit}' /etc/os-release 2>&-)
-if awk '($2=="/usr"){if($4~/\<ro\>/){exit 0}else{exit 1} }' /proc/mounts 2>/dev/null; then
+if awk '{got="false"};($2=="/usr"){got="true"; if($4~/\<ro\>/){exit 0}else{exit 1} } \
+		END{if(got=="false"){exit 1}}' /proc/mounts  2>/dev/null; then
 	os="COS"
 else
 	os="CentOS" # maybe fake as COS
@@ -349,12 +350,14 @@ else
 	/bin/true
 fi
 
-cat > /usr/share/oem/grub.cfg << EOF
+if [ "${os}" == "COS" ]; then
+	cat > /usr/share/oem/grub.cfg << EOF
 set linux_append="rootflags=data=journal"
 EOF
 
-mkdir -p /opt/bin/
-ln -sf /usr/lib/csphere/etc/bin/{axel,bc,dig,host,nc,nslookup,strace,telnet}  /opt/bin/
+	mkdir -p /opt/bin/
+	ln -sf /usr/lib/csphere/etc/bin/{axel,bc,dig,host,nc,nslookup,strace,telnet}  /opt/bin/
+fi
 
 # make sure all of symlink prepared
 # as cos update won't create new added symlink
