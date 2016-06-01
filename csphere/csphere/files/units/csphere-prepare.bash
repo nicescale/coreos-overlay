@@ -261,15 +261,20 @@ EOF
 	fi
 
 elif [ "${COS_ROLE}" == "agent" ]; then
+	dockerAppendOpts=
+	if [ "${os}" == "CentOS" ]; then
+		dockerAppendOpts="--exec-opt native.cgroupdriver=cgroupfs"
+	fi
+
 	# create /etc/csphere/csphere-docker-agent.env
 	if [ "${COS_NETMODE}" == "bridge" ]; then
 	cat << EOF > /etc/csphere/csphere-docker-agent.env
-DOCKER_START_OPTS=daemon -b br0 --csphere --iptables=false --ip-forward=false --storage-driver=overlay --default-gateway=${DEFAULT_GW}
+DOCKER_START_OPTS=daemon -b br0 --csphere --iptables=false --ip-forward=false --storage-driver=overlay --default-gateway=${DEFAULT_GW} ${dockerAppendOpts}
 DEFAULT_NETWORK=${COS_NETMODE}
 EOF
 	elif [ "${COS_NETMODE}" == "ipvlan" ]; then
 	cat << EOF > /etc/csphere/csphere-docker-agent.env
-DOCKER_START_OPTS=daemon --csphere --iptables=false --ip-forward=false --storage-driver=overlay
+DOCKER_START_OPTS=daemon --csphere --iptables=false --ip-forward=false --storage-driver=overlay ${dockerAppendOpts=}
 DEFAULT_NETWORK=${COS_NETMODE}
 EOF
 	fi
