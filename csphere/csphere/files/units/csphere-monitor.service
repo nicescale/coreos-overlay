@@ -1,0 +1,15 @@
+[Unit]
+Description=Csphere HA Monitor
+After=systemd-networkd-wait-online.service network-online.target
+Wants=systemd-networkd-wait-online.service network-online.target
+After=csphere-mongodb.service
+
+[Service]
+User=root
+Type=simple
+ExecStart=/etc/csphere/csphere-monitor.bash
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

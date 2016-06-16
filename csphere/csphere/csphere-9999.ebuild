@@ -141,6 +141,7 @@ src_install() {
 	dobin "${FILESDIR}/units/csphere-skydns-startup.bash"
 	dobin "${FILESDIR}/units/etcd2-proxy2member.bash"
 	dobin "${FILESDIR}/units/csphere-init.bash"
+	dobin "${FILESDIR}/units/csphere-monitor.bash"
 	dobin "${FILESDIR}/bin/strace"   # collision with dev-util/strace-4.6
 	dobin "${FILESDIR}/bin/axel"
 	dobin "${FILESDIR}/bin/dig"
@@ -162,6 +163,7 @@ src_install() {
 	systemd_dounit "${FILESDIR}/units/csphere-controller.service"
 	systemd_dounit "${FILESDIR}/units/csphere-backup.service"
 	systemd_dounit "${FILESDIR}/units/csphere-backup.timer"
+	systemd_dounit "${FILESDIR}/units/csphere-monitor.service"
 
 	# only agent need
 	systemd_dounit "${FILESDIR}/units/csphere-etcd2-agent.service"
@@ -192,6 +194,7 @@ src_install() {
 	dosym /usr/lib/csphere/etc/bin/etcd2-proxy2member.bash /etc/csphere/etcd2-proxy2member.bash
 	dosym /usr/lib/csphere/etc/bin/csphere-docker-agent-after.bash /etc/csphere/csphere-docker-agent-after.bash
 	dosym /usr/lib/csphere/etc/bin/csphere-skydns-startup.bash /etc/csphere/csphere-skydns-startup.bash
+	dosym /usr/lib/csphere/etc/bin/csphere-monitor.bash /etc/csphere/csphere-monitor.bash
 	# this will lead to file collision with app-misc/mime-types-9:0::portage-stable
 	# dosym /usr/lib/csphere/etc/mime.types /etc/mime.types
 	# dosym /usr/lib/csphere/etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt

@@ -22,6 +22,27 @@ CtlComps=(
 	"controller"	"csphere-controller"		"csphere"
 )
 
+isRepl() {
+		local host="127.0.0.1"
+        local output
+        output=$( mongo --eval "tojson(rs.status())" $host 2>&1 )
+        if [ $? -ne 0 ]; then
+                return 2  # mongo error
+        fi
+        if echo -e "${output}" | grep -E -q "errmsg.+not running with --replSet"; then
+                return 1  # not replset
+        fi
+        return 0          # is replset
+}
+
+# append component monitor
+if isRepl; then
+	CtlComps=(  ${CtlComps[*]}
+	"monitor"	"csphere-monitor" 		"csphere-monitor"
+	)
+fi
+
+# Def
 echo_green() {
   local content=$*
   echo -e "\033[1;32m${content}\033[0m\c "
@@ -52,6 +73,7 @@ cat << EOF
 	stop		[proc]
 	status		[proc]
 	restart		[proc]
+	setkey		authkey
 	?		show alias
 	logs        proc
 
@@ -168,21 +190,41 @@ start_comp() {
 	
 	if [ "${dname}" == "-" ]; then
 		echo -e "Starting ${comp} ... $(echo_yellow "SKIP")"
-		return
+		return 0
 	fi
 
 	echo -en "Starting ${dname} ... "
 	if is_running "${comp}" "${pname}"; then
 		echo -e "$(echo_yellow "SKIP")"
+		return 0
 	else
 		systemctl start "${comp}"
 		wait; sleep 1
 		if is_running "${comp}" "${pname}"; then 
 			echo -e "$(echo_green "OK")"
+			return 0
 		else
 			echo -e "$(echo_red "FAIL")"
+			return 1
 		fi
 	fi
+}
+
+setkey(){
+	set -e
+	local key=$1
+	if [ -z "${key}" ]; then
+		echo "error: authkey required."
+		exit 1
+	fi
+
+	rm -f /etc/.csphere-token
+	sed -i -e '/^.*COS_AUTH_KEY.*$/c\      COS_AUTH_KEY='$key'' /var/lib/coreos-install/user_data
+	sed -i -e '/^COS_AUTH_KEY=.*$/c\COS_AUTH_KEY='$key'' /etc/csphere/inst-opts.env
+	systemctl start csphere-prepare
+	mongo 127.0.0.1:27017/csphere --quiet --eval 'db.settings.remove({"key":"token"})' 2>/dev/null
+	mongo 127.0.0.1:27017/csphere --quiet --eval 'db.settings.insert({"key":"token", "value":"'$key'"})' 2>/dev/null
+	echo +OK
 }
 
 stop_comp(){
@@ -190,7 +232,7 @@ stop_comp(){
 
 	if [ "${dname}" == "-" ]; then
 		echo -e "Stoping ${comp} ... $(echo_yellow "SKIP")"
-		return
+		return 0
 	fi
 
 	echo -en "Stoping ${dname} ... "
@@ -199,11 +241,14 @@ stop_comp(){
 		wait; sleep 1
 		if is_running "${comp}" "${pnaem}"; then
 			echo -e "$(echo_red "FAIL")"
+			return 1
 		else
 			echo -e "$(echo_green "OK")"
+			return 0
 		fi
 	else
 		echo -e "$(echo_yellow "SKIP")"
+		return 0
 	fi
 }
 
@@ -350,6 +395,11 @@ case "$#" in
 	;;
 "2")
 	arg1=$1; arg2=$2
+
+	if [ "${arg1}" == "setkey" ]; then
+		setkey "${arg2}"
+		exit $?
+	fi
 
 	if ! is_comp "${arg2}"; then
 		echo "$(echo_yellow "${arg2}") not component"
