@@ -226,14 +226,19 @@ EOF
 
 	# setup /etc/mongodb.conf
 	[ -L /etc/mongodb.conf ] && rm -f /etc/mongodb.conf
+	if [ "${COS_MONGOREPL}" == "YES" ]; then
+		otherOpts="replSet = rs0\nbind_ip = 0.0.0.0\n"
+	elif [ "${COS_MONGOREPL}" == "NO" ]; then
+		otherOpts="bind_ip = 127.0.0.1\n"
+	fi
 	cat << EOF > /etc/mongodb.conf
 dbpath=/data/db
 logpath=/data/logs/mongodb.log
 logappend=true
-bind_ip = 127.0.0.1
 port = 27017
 journal=true
 smallfiles=true
+$(echo -e "${otherOpts}")
 EOF
 
 	# create /etc/prometheus.yml
