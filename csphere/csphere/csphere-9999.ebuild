@@ -136,7 +136,6 @@ src_install() {
 	into /usr/lib/csphere/etc/
 	dobin "${FILESDIR}/units/csphere-prepare.bash"
 	dobin "${FILESDIR}/units/csphere-backup.bash"
-	dobin "${FILESDIR}/units/csphere-agent-after.bash"
 	dobin "${FILESDIR}/units/csphere-docker-agent-after.bash"
 	dobin "${FILESDIR}/units/csphere-skydns-startup.bash"
 	dobin "${FILESDIR}/units/etcd2-proxy2member.bash"
@@ -190,7 +189,6 @@ src_install() {
 
 	dosym /usr/lib/csphere/etc/bin/csphere-prepare.bash /etc/csphere/csphere-prepare.bash
 	dosym /usr/lib/csphere/etc/bin/csphere-backup.bash /etc/csphere/csphere-backup.bash
-	dosym /usr/lib/csphere/etc/bin/csphere-agent-after.bash /etc/csphere/csphere-agent-after.bash
 	dosym /usr/lib/csphere/etc/bin/etcd2-proxy2member.bash /etc/csphere/etcd2-proxy2member.bash
 	dosym /usr/lib/csphere/etc/bin/csphere-docker-agent-after.bash /etc/csphere/csphere-docker-agent-after.bash
 	dosym /usr/lib/csphere/etc/bin/csphere-skydns-startup.bash /etc/csphere/csphere-skydns-startup.bash
