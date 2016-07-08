@@ -84,6 +84,9 @@ src_compile() {
 	rm -rf /tmp/registry.img
 	cp -a ${FILESDIR}/registry.img /tmp/  # rpm: /tmp/registry.img
 
+	rm -rf /tmp/hostterm.img
+	cp -a ${FILESDIR}/hostterm.img /tmp/  # rpm: /tmp/hostterm.img
+
 	rm -rf /tmp/csphere-mongo/
 	mkdir -p /tmp/csphere-mongo/
 	# rpm: /tmp/csphere-mongo/bin/{mongo,mongod,mongodump,mongoexport,mongoimport,mongorestore,mongostat}
@@ -107,6 +110,7 @@ src_install() {
 	newbin ${FILESDIR}/bin/fusermount fusermount
 
 	newbin ${FILESDIR}/registry.img  registry.img
+	newbin ${FILESDIR}/hostterm.img  hostterm.img
 	newbin /tmp/csphere csphere
 	newbin /tmp/csphere-mongo/bin/mongod mongod
 	newbin /tmp/csphere-mongo/bin/mongo  mongo
