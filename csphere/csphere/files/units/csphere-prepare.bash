@@ -345,7 +345,7 @@ fkpem="/data/tls/key.pem"
 if [ -s "${fcpem}" -a -s "${fkpem}" ]; then
 	:
 else 
-	mkdir -p /data/tls /root/.csphere
+	mkdir -p /data/tls
 	openssl genrsa -out ${fkpem}
 	openssl req -new -key ${fkpem} \
   		-out /data/tls/tmp.csr \
@@ -355,8 +355,6 @@ else
   		-req -signkey ${fkpem} \
   		-days 3650
 	rm -f /data/tls/tmp.csr 
-	ln -sv ${fkpem} /root/.csphere/key.pem
-	ln -sv ${fcpem} /root/.csphere/cert.pem
 	/bin/true
 fi
 
