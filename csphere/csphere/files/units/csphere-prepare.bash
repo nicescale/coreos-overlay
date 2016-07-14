@@ -142,10 +142,16 @@ elif [ "${COS_NETMODE}" == "ipvlan" ]; then
 
 fi
 
+# set defaultgw as system's default gw for docker container default gateway
 defaultgw=$(route -n 2>&- |\
 	awk '($1=="0.0.0.0" && $4~/UG/){print $2;exit;}' )
 if [ -z "${defaultgw}" ]; then
 	echo "WARN: no local default gateway route found"
+fi
+
+# overwrite defaultgw if specified
+if [ -n "${COS_CUSTOM_DOCKERGW}" ]; then
+	defaultgw="${COS_CUSTOM_DOCKERGW}"
 fi
 
 IFS=. read -r m0 m1 m2 m3 <<< "$mask1"
@@ -284,10 +290,15 @@ DEFAULT_NETWORK=${COS_NETMODE}
 EOF
 	fi
 
+	# setup agent env: AGENT_DNSIP which will be used as container's HostConfig.DNS
 	SKYDNS_IP=$( echo -e "${LOCAL_IP}" | awk 'BEGIN{FS=OFS="."}{$NF=$NF+1; print}' )
 	AGENT_DNSIP=${LOCAL_IP}
 	if [ "${COS_NETMODE}" == "ipvlan" ]; then
 		AGENT_DNSIP=${SKYDNS_IP}
+	fi
+	# overwrite AGENT_DNSIP if specified
+	if [ -n "${COS_CUSTOM_DOCKERDNS}" ]; then
+		AGENT_DNSIP="${COS_CUSTOM_DOCKERDNS}"
 	fi
 
 	# create /etc/csphere/csphere-skydns.env
