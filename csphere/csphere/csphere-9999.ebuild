@@ -69,6 +69,7 @@ src_compile() {
 	# build version 1.0.0 with godep
 	# GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
 	# build version > 1.0.0 with vendor
+	ln -sv . /tmp/src/github.com/nicescale/csphere/vendor/src
 	GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/vendor \
 		CGO_ENABLED=0 GOOS=linux \
 		go build -a -installsuffix nocgo \
