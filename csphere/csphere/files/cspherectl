@@ -73,7 +73,6 @@ cat << EOF
 	stop		[proc]
 	status		[proc]
 	restart		[proc]
-	setkey		authkey
 	?		show alias
 	logs        proc
 
@@ -208,23 +207,6 @@ start_comp() {
 			return 1
 		fi
 	fi
-}
-
-setkey(){
-	set -e
-	local key=$1
-	if [ -z "${key}" ]; then
-		echo "error: authkey required."
-		exit 1
-	fi
-
-	rm -f /etc/.csphere-token
-	sed -i -e '/^.*COS_AUTH_KEY.*$/c\      COS_AUTH_KEY='$key'' /var/lib/coreos-install/user_data
-	sed -i -e '/^COS_AUTH_KEY=.*$/c\COS_AUTH_KEY='$key'' /etc/csphere/inst-opts.env
-	systemctl start csphere-prepare
-	mongo 127.0.0.1:27017/csphere --quiet --eval 'db.settings.remove({"key":"token"})' 2>/dev/null
-	mongo 127.0.0.1:27017/csphere --quiet --eval 'db.settings.insert({"key":"token", "value":"'$key'"})' 2>/dev/null
-	echo +OK
 }
 
 stop_comp(){
@@ -395,11 +377,6 @@ case "$#" in
 	;;
 "2")
 	arg1=$1; arg2=$2
-
-	if [ "${arg1}" == "setkey" ]; then
-		setkey "${arg2}"
-		exit $?
-	fi
 
 	if ! is_comp "${arg2}"; then
 		echo "$(echo_yellow "${arg2}") not component"
