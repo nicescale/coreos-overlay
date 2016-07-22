@@ -75,6 +75,7 @@ cat << EOF
 	restart		[proc]
 	?		show alias
 	logs        proc
+	snap
 
 EOF
 exit 0
@@ -305,6 +306,61 @@ status(){
   fi
 }
 
+nodeid(){
+	local id="unknown"
+	if [ -e /etc/.csphere-uuid ]; then
+		read id < /etc/.csphere-uuid
+	fi
+	echo -e "${id}"
+}
+
+snap_state(){
+
+	local destdir=$(mktemp -d --suffix="-${COS_ROLE}")
+	local args=( $* )
+	local destname="/tmp/${COS_ROLE}-$(nodeid).tar.gz"
+	if [ ${#args[*]} -eq 0 ]; then
+		args=( "-n" "300" "--no-tail" )
+	fi
+
+
+	(
+		cd "${destdir}"
+
+		cp /etc/os-release  .
+		cp /proc/meminfo /proc/cpuinfo /proc/loadavg .
+		cp /proc/mounts  /proc/cmdline /proc/diskstats .
+		dmesg  > dmesg
+		uptime > uptime
+		( df -Th; df -Ti ) > df
+		top -n 2 -d 1 -b > top
+
+		/usr/bin/csphere -v > csphere.version
+		/usr/bin/net-plugin  -v > net-plugin.version
+		/usr/bin/docker version > docker.version
+		/usr/bin/docker info > docker.info
+
+		etcdctl member list > etcd.member.list
+		etcdctl cluster-health  > etcd.cluster-health
+
+		journalctl /usr/bin/etcd2 ${args[*]} > etcd2
+		journalctl /usr/bin/docker ${args[*]} > docker
+		journalctl /usr/bin/skydns ${args[*]} > skydns
+		journalctl /usr/bin/prometheus ${args[*]} > prometheus
+
+		journalctl -u csphere-dockeripam ${args[*]} > net-plugin
+		journalctl -u csphere-agent ${args[*]} > csphere.agent
+		journalctl -u csphere-controller ${args[*]} > csphere.controller
+
+		tail -n 300 /data/logs/mongodb.log > mongodb
+
+		cd ..
+		tar -c --remove-files -zf "${destname}" "${destdir##*/}"
+
+	) 2>/dev/null
+
+	echo -e "${destname}"
+}
 
 
 ### Main Body Begin
@@ -334,16 +390,25 @@ esac
 
 
 # 2. process args
+if [ "$1" == "snap" ]; then
+	shift
+	snap_state $*
+	exit $?
+fi
+
 case "$#" in  
 "0")
 	show_help	;;
 "1")
         arg1=$1;
-        case "$arg1" in
-        "help"|"h")
-                show_help    			;;
+
+	case "$arg1" in
+	"help"|"h")
+		show_help    		;;
+
 	"?"|"/?")
 		show_alias			;;
+
 	"start"|"a")
 		start
 		wait
@@ -363,14 +428,15 @@ case "$#" in
 		echo_line
 		status				
 		echo_line			;;
+
 	"restart"|"r")
 		stop
 		sleep 1
 		start
 		echo_line "${Role^} Status:"
 		status
-		echo_line
-						;;
+		echo_line			;;
+
 	*)
 		show_help			;;
 	esac
