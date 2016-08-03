@@ -327,6 +327,11 @@ snap_state(){
 	(
 		cd "${destdir}"
 
+		tar -c --exclude=frontend* -zf etc-csphere.tgz /etc/csphere/
+		tar -czf etc-systemd-network.tgz /etc/systemd/network/
+
+		cp /var/lib/coreos-install/user_data .
+
 		cp /etc/os-release  .
 		cp /proc/meminfo /proc/cpuinfo /proc/loadavg .
 		cp /proc/mounts  /proc/cmdline /proc/diskstats .
