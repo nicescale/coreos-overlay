@@ -395,11 +395,6 @@ if [ ! -e /etc/csphere/csphere-backup.bash ]; then
 		ln -sv /usr/lib/csphere/etc/bin/csphere-backup.bash /etc/csphere/csphere-backup.bash
 	fi
 fi
-if [ ! -e /etc/csphere/csphere-agent-after.bash ]; then
-	if [ -e /usr/lib/csphere/etc/bin/csphere-agent-after.bash ]; then
-		ln -sv /usr/lib/csphere/etc/bin/csphere-agent-after.bash /etc/csphere/csphere-agent-after.bash
-	fi
-fi
 if [ ! -e /etc/csphere/etcd2-proxy2member.bash ]; then
 	if [ -e /usr/lib/csphere/etc/bin/etcd2-proxy2member.bash ]; then
 		ln -sv /usr/lib/csphere/etc/bin/etcd2-proxy2member.bash /etc/csphere/etcd2-proxy2member.bash
