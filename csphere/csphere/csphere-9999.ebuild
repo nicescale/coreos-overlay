@@ -90,7 +90,7 @@ src_compile() {
 
 	rm -rf /tmp/csphere-mongo/
 	mkdir -p /tmp/csphere-mongo/
-	# rpm: /tmp/csphere-mongo/bin/{mongo,mongod,mongodump,mongoexport,mongoimport,mongorestore,mongostat}
+	# rpm: /tmp/csphere-mongo/bin/{mongo,mongod,mongodump,mongoexport,mongoimport,mongorestore,mongostat,mongofiles}
 	tar -xzf ${FILESDIR}/csphere-mongo.tgz -C /tmp/csphere-mongo/
 
 	rm -rf /tmp/svn
@@ -120,6 +120,7 @@ src_install() {
 	newbin /tmp/csphere-mongo/bin/mongoimport  mongoimport
 	newbin /tmp/csphere-mongo/bin/mongorestore  mongorestore
 	newbin /tmp/csphere-mongo/bin/mongostat mongostat
+	newbin /tmp/csphere-mongo/bin/mongofiles mongofiles
 	newbin /tmp/csphere-quota csphere-quota
 	newbin /tmp/svn/bin/svn svn
 
