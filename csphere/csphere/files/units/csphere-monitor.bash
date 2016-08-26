@@ -35,7 +35,7 @@ isMaster() {
 }
 
 online_iface_list() {
-	ip link show |grep 'state UP'|awk -F : '{print $2}'|tr -d ' '
+	ip link show |grep 'state UP'|awk -F : '{split($2, a, "@"); sub(/^[ \t\r\n]+/, "", a[1]); print a[1]}'
 }
 
 iface_addr_list() {
