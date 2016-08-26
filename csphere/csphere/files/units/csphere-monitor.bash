@@ -115,10 +115,6 @@ echo "$host is in mongo replset mode"
 while :; do
 	sleep 1
 	if ! isMaster; then
-		if cspherectl status agent >/dev/null 2>&1; then
-			echo "trying to stop agent ..."
-			cspherectl stop agent
-		fi
 		if cspherectl status controller >/dev/null 2>&1; then
 			echo "trying to stop controller ..."
 			cspherectl stop controller
@@ -138,10 +134,6 @@ while :; do
 	if ! cspherectl status controller >/dev/null 2>&1; then
 		echo "trying to start controller ..."
 		cspherectl start controller
-	fi
-	if ! cspherectl status agent >/dev/null 2>&1; then
-		echo "trying to start agent ..."
-		cspherectl start agent
 	fi
 	add_ip
 done
