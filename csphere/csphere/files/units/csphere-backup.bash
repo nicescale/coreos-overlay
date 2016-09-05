@@ -38,7 +38,7 @@ suffix=$(date +%Y-%m-%d_%H-%M-%S)
 name="${BACKUP_DIR}/${prefix}-${suffix}.tgz"
 
 cd $BACKUP_DIR
-mongodump -v --db csphere --excludeCollection=containers --excludeCollection=images
+mongodump -v --db csphere --excludeCollection=containers --excludeCollection=images --excludeCollection=container_events
 tar -c --remove-files -zf $name dump
 
 # longterm reserve
