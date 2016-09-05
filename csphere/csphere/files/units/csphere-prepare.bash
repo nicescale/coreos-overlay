@@ -223,9 +223,13 @@ LISTEN_ADDR=:${COS_CONTROLLER_PORT}
 EOF
 
 	# create /etc/csphere/csphere-agent.env
+	ccHostIP=${LOCAL_IP}
+	if [ -n "${CONTROLLER_FLOAT_IP}" ]; then
+		ccHostIP=${CONTROLLER_FLOAT_IP}
+	fi
 	cat << EOF > /etc/csphere/csphere-agent.env
 ROLE=agent
-CONTROLLER_ADDR=${LOCAL_IP}:${COS_CONTROLLER_PORT}
+CONTROLLER_ADDR=${ccHostIP}:${COS_CONTROLLER_PORT}
 AUTH_KEY=${COS_AUTH_KEY}
 SVRPOOLID=${COS_SVRPOOL_ID}
 EOF
