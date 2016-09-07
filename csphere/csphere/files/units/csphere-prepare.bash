@@ -298,6 +298,10 @@ elif [ "${COS_ROLE}" == "agent" ]; then
 		dockerAppendOpts="--exec-opt native.cgroupdriver=cgroupfs"
 	fi
 
+	if [ "${COS_NETMODE}" == "bridge" ] && [ -n "${COS_CUSTOM_DOCKERBIP}" ] ; then
+		dockerAppendOpts="${dockerAppendOpts} -bip=${COS_CUSTOM_DOCKERBIP}"
+	fi
+
 	# create /etc/csphere/csphere-docker-agent.env
 	if [ "${COS_NETMODE}" == "bridge" ]; then
 	cat << EOF > /etc/csphere/csphere-docker-agent.env
