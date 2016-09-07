@@ -70,20 +70,6 @@ if [ -z "${COS_NETMODE}" ]; then
 	COS_NETMODE="bridge"
 fi
 
-if [ "${COS_NETMODE}" == "bridge" -a "${COS_ROLE}" == "agent" ]; then
-	# sync br0 ether mac firstly, so dhcp work well
-	# promisc br0, setup br0 hw ether mac
-	ifconfig br0 promisc
-	br0inet="$(brctl show br0 2>&- | awk '($1=="br0" && NF==4){print $NF}')"
-	br0inetmac="$(ifconfig "${br0inet}" | awk '(/\<ether\>/){print $2}')"
-	if [ -n "${br0inetmac}" ]; then
-		ifconfig br0 hw ether "${br0inetmac}"
-	else
-		echo "WARN: br0 hw ether mac Null"
-	fi
-fi
-
-
 # write csphere-public.env
 ipaddr=
 mask1=
@@ -94,10 +80,10 @@ defaultgw=
 if [ "${COS_NETMODE}" == "bridge" ]; then
 	for i in `seq 1 10`
 	do
-		ipaddr=$( ifconfig br0  2>&- |\
+		ipaddr=$( ifconfig ${COS_INETDEV} 2>&- |\
 			awk '($1=="inet"){print $2;exit}' )
 		if [ -z "${ipaddr}" ]; then
-			echo "WARN: no local ipaddr found on br0, waitting for ${i} seconds ..."
+			echo "WARN: no local ipaddr found on ${COS_INETDEV}, waitting for ${i} seconds ..."
 			sleep ${i}s
 		else
 			break
@@ -105,10 +91,10 @@ if [ "${COS_NETMODE}" == "bridge" ]; then
 	done
 	# we stop while networking broken
 	if [ -z "${ipaddr}" ]; then
-		echo "CRIT: no local ipaddr found on br0, abort."
+		echo "CRIT: no local ipaddr found on ${COS_INETDEV}, abort."
 		exit 1
 	fi
-	mask1=$( ifconfig br0  2>&- |\
+	mask1=$( ifconfig ${COS_INETDEV} 2>&- |\
 		awk '($1=="inet"){print $4;exit}' )
 	mask=$( mask2cidr ${mask1} )
 	if [ $? -ne 0 ]; then
@@ -299,13 +285,13 @@ elif [ "${COS_ROLE}" == "agent" ]; then
 	fi
 
 	if [ "${COS_NETMODE}" == "bridge" ] && [ -n "${COS_CUSTOM_DOCKERBIP}" ] ; then
-		dockerAppendOpts="${dockerAppendOpts} -bip=${COS_CUSTOM_DOCKERBIP}"
+		dockerAppendOpts="${dockerAppendOpts} --bip=${COS_CUSTOM_DOCKERBIP}"
 	fi
 
 	# create /etc/csphere/csphere-docker-agent.env
 	if [ "${COS_NETMODE}" == "bridge" ]; then
 	cat << EOF > /etc/csphere/csphere-docker-agent.env
-DOCKER_START_OPTS=daemon -b br0 --csphere --iptables=false --ip-forward=false --storage-driver=overlay --default-gateway=${DEFAULT_GW} ${dockerAppendOpts}
+DOCKER_START_OPTS=daemon --csphere --storage-driver=overlay ${dockerAppendOpts}
 DEFAULT_NETWORK=${COS_NETMODE}
 EOF
 	elif [ "${COS_NETMODE}" == "ipvlan" ]; then
