@@ -247,7 +247,6 @@ logpath=/data/logs/mongodb.log
 logappend=true
 port = 27017
 journal=true
-smallfiles=true
 $(echo -e "${otherOpts}")
 EOF
 
@@ -273,6 +272,24 @@ EOF
 	# create /etc/mime.types
 	if [ ! -e /etc/mime.types ]; then
 		ln -sv /usr/lib/csphere/etc/mime.types /etc/mime.types
+	fi
+
+	# disable THP
+	# See: https://docs.mongodb.com/manual/tutorial/transparent-huge-pages/
+	if [ -d /sys/kernel/mm/transparent_hugepage ]; then
+		thp_path=/sys/kernel/mm/transparent_hugepage
+	elif [ -d /sys/kernel/mm/redhat_transparent_hugepage ]; then
+		thp_path=/sys/kernel/mm/redhat_transparent_hugepage
+	fi
+	if [ -n $thp_path ]; then
+		echo 'never' > ${thp_path}/enabled
+		echo 'never' > ${thp_path}/defrag
+		re='^[0-1]+$'
+		if [[ $(cat ${thp_path}/khugepaged/defrag) =~ $re ]]; then
+			echo 0  > ${thp_path}/khugepaged/defrag 	# RHEL 7
+		else
+			echo 'no' > ${thp_path}/khugepaged/defrag  	# RHEL 6
+		fi
 	fi
 
 elif [ "${COS_ROLE}" == "agent" ]; then
