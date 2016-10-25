@@ -281,7 +281,7 @@ EOF
 	elif [ -d /sys/kernel/mm/redhat_transparent_hugepage ]; then
 		thp_path=/sys/kernel/mm/redhat_transparent_hugepage
 	fi
-	if [ -n $thp_path ]; then
+	if [ -n "$thp_path" ]; then
 		echo 'never' > ${thp_path}/enabled
 		echo 'never' > ${thp_path}/defrag
 		re='^[0-1]+$'
@@ -394,9 +394,32 @@ if [ "${os}" == "COS" ]; then
 	cat > /usr/share/oem/grub.cfg << EOF
 set linux_append="rootflags=data=journal"
 EOF
-
 	mkdir -p /opt/bin/
 	ln -sf /usr/lib/csphere/etc/bin/{axel,bc,dig,host,nc,nslookup,strace,telnet}  /opt/bin/
+fi
+
+# setup rngd
+if [ "${os}" == "CentOS" ]; then
+	sed -i -e '/^ExecStart=/cExecStart=/usr/sbin/rngd -r /dev/urandom -o /dev/random -f' \
+		/usr/lib/systemd/system/rngd.service
+elif [ "${os}" == "COS" ]; then
+	sed -e    '/^ExecStart=/cExecStart=/usr/sbin/rngd -r /dev/urandom -o /dev/random -f' \
+		/usr/lib/systemd/system/rngd.service   > /etc/systemd/system/rngd.service
+fi
+
+# enable & start rngd service
+systemctl daemon-reload
+if ! systemctl is-enabled rngd.service >/dev/null 2>&1; then
+	systemctl enable rngd.service
+fi
+if ! systemctl is-active rngd.service >/dev/null 2>&1; then
+	systemctl start rngd.service
+fi
+
+# ensure timezone = Asia/Shanghai
+zone=$(readlink -f  /etc/localtime 2>&1)
+if [ "${zone}" != "/usr/share/zoneinfo/Asia/Shanghai" ]; then
+	ln -svf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 fi
 
 # make sure all of symlink prepared
