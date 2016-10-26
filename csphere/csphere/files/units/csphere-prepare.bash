@@ -52,16 +52,32 @@ fi
 # load install opts file
 . ${FInstOpts}
 
-# ensure systemd-timesyncd.service
-if [ "${COS_ROLE}" == "agent" -a "${os}" == "COS" ]; then
-	# setup /etc/systemd/timesyncd.conf
-	cat << EOF > /etc/systemd/timesyncd.conf
+if [ "${COS_ROLE}" == "agent" ]; then
+	# COS: setup systemd-timesyncd service
+	if [ "${os}" == "COS" ]; then
+		cat << EOF > /etc/systemd/timesyncd.conf
 [Time]
 NTP=${COS_CONTROLLER%%:*}
 FallbackNTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org
 EOF
-	if ! systemctl is-active systemd-timesyncd.service; then
-		systemctl start systemd-timesyncd.service || true
+		if ! systemctl is-enabled systemd-timesyncd.service; then
+			systemctl enable systemd-timesyncd.service || true
+		fi
+		if ! systemctl is-active systemd-timesyncd.service; then
+			systemctl start systemd-timesyncd.service || true
+		fi
+
+	# CentOS: setup ntp.conf
+	elif [ "${os}" == "CentOS" ]; then
+		cat << EOF > /etc/ntp.conf
+server ${COS_CONTROLLER%:*}
+EOF
+		if ! systemctl is-enabled ntpd.service; then
+			systemctl enable ntpd.service
+		fi
+		if ! systemctl is-active ntpd.service; then
+			systemctl start ntpd.service
+		fi
 	fi
 fi
 
