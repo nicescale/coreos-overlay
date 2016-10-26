@@ -208,4 +208,9 @@ src_install() {
 	dodir /usr/share/profile.d/
 	insinto /usr/share/profile.d/
 	doins "${FILESDIR}/start_isoinstaller.sh"
+
+	# install docker bash completion
+	insinto /usr/share/profile.d/
+	doins "${FILESDIR}/bash_completion.sh"
+	doins "${FILESDIR}/docker_completion.sh"
 }
