@@ -208,8 +208,11 @@ DISK_RESERV_SIZE=${DISK_RESERV_SIZE:-5120}
 EOF
 
 	# compatible with old version
-	if ! systemctl is-enabled ntpd >/dev/null 2>&1; then
+	if ! systemctl is-enabled ntpd.service >/dev/null 2>&1; then
 		systemctl enable ntpd.service
+	fi
+	if ! systemctl is-active ntpd.service >/dev/null 2>&1; then
+		systemctl start ntpd.service
 	fi
 	if ! systemctl is-enabled csphere-backup.service >/dev/null 2>&1; then
 		systemctl enable csphere-backup.service

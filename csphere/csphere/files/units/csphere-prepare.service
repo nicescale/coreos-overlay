@@ -2,7 +2,6 @@
 Description=Csphere Prepare Work
 After=systemd-networkd-wait-online.service network-online.target
 Wants=systemd-networkd-wait-online.service network-online.target
-Before=ntpd.service
 
 [Service]
 User=root
