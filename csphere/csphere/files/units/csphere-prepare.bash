@@ -71,6 +71,8 @@ EOF
 	elif [ "${os}" == "CentOS" ]; then
 		cat << EOF > /etc/ntp.conf
 server ${COS_CONTROLLER%:*}
+server 127.127.1.0     # local clock
+fudge  127.127.1.0 stratum 10
 EOF
 		if ! systemctl is-enabled ntpd.service; then
 			systemctl enable ntpd.service
@@ -190,13 +192,15 @@ if [ "${COS_ROLE}" == "controller" ]; then
 	# setup /etc/ntp.conf
 	[ -L /etc/ntp.conf ] && rm -f /etc/ntp.conf
 	cat << EOF > /etc/ntp.conf
-server 0.pool.ntp.org
-server 1.pool.ntp.org
-server 2.pool.ntp.org
-server 3.pool.ntp.org
-
-restrict default nomodify nopeer noquery limited kod
+driftfile /var/lib/ntp/ntp.drift
+restrict default kod nomodify notrap nopeer noquery
 restrict ${NETWORK} mask ${mask1} nomodify notrap
+
+server 210.72.145.44 # national
+server 202.112.10.36 # 1.cn.pool.ntp.org
+server 59.124.196.83 # 0.asia.pool.ntp.org
+server 127.127.1.0   # local clock
+fudge  127.127.1.0 stratum 10
 EOF
 
 	# create /etc/csphere/csphere-backup.env
