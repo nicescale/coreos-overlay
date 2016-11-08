@@ -48,7 +48,7 @@ RESTRICT="installsources strip"
 src_prepare() {
 	[ -d assets ] && rm -rf assets
 	( gzip -dc ${FILESDIR}/assets-latest.tgz | tar x ) || die "uncompress assets-latest.tgz"
-	cp -r terminal/assets assets/terminal
+	cp -r vnc/noVNC assets/vnc
 	/build/amd64-usr/usr/bin/go-bindata -nomemcopy -prefix=assets \
 		-o views/assets.go -pkg=views ./assets/... || die "go-bindata on assets views"
 	cat assets/build.txt  | tee /tmp/csphere-product-csphere-fe.txt
