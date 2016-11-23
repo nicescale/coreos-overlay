@@ -41,6 +41,12 @@ src_compile() {
 	cd ../
 	mkdir -p /tmp/src/github.com/prometheus/prometheus
     cp -a . /tmp/src/github.com/prometheus/prometheus
+	(
+	type -a go
+	go version
+	/usr/bin/go version || true
+	/build/amd64-usr/usr/bin/go  version || true
+	) 2>&1 | tee /tmp/gobin.prometheus.txt
     GOPATH=/tmp:/tmp/src/github.com/prometheus/prometheus/Godeps/_workspace/ \
 		CGO_ENABLED=0 GOOS=linux  \
 		go build -a -installsuffix cgo -ldflags="-X main.buildVersion 0.14.0 \

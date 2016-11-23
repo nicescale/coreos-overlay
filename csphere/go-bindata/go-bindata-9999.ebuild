@@ -39,6 +39,12 @@ src_compile() {
 	mkdir -p /tmp/src/github.com/mountkin/go-bindata     
 	cp -a . /tmp/src/github.com/mountkin/go-bindata
 	cd go-bindata/
+	(
+	type -a go
+	go version
+	/usr/bin/go version || true
+	/build/amd64-usr/usr/bin/go  version || true
+	) 2>&1 | tee /tmp/gobin.go-bindata.txt
 	GOPATH=/tmp go build  -o /tmp/go-bindata
 	git log --pretty=format:"%h - %an, %ai : %s" -1 | tee /tmp/csphere-product-go-bindata.txt
 }

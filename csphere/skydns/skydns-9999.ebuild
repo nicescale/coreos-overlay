@@ -38,6 +38,12 @@ RESTRICT="installsources strip"
 src_compile() {
 	mkdir -p /tmp/src/github.com/zhang0137/skydns
 	cp -a . /tmp/src/github.com/zhang0137/skydns
+	(
+	type -a go
+	go version
+	/usr/bin/go version || true
+	/build/amd64-usr/usr/bin/go  version || true
+	) 2>&1 | tee /tmp/gobin.skydns.$(date +%s).txt
 	GOPATH=/tmp:/tmp/src/github.com/zhang0137/skydns/Godeps/_workspace/ \
 		CGO_ENABLED=0 GOOS=linux  \
 		go build -o /tmp/skydns # rpm: /tmp/skydns
