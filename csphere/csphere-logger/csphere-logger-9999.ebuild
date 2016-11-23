@@ -36,9 +36,14 @@ RDEPEND="
 RESTRICT="installsources strip"
 
 src_compile() {
-	./hack/make.sh || die "build csphere-logger"
+	rm -rf /tmp/src/github.com/nicescale/csphere-logger
+	mkdir -p /tmp/src/github.com/nicescale/csphere-logger
+	cp -a . /tmp/src/github.com/nicescale/csphere-logger/
+	GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere-logger/vendor/ \
+	CGO_ENABLED=0 GOOS=linux \
+		go build -v -ldflags "-w" \
+		-o /tmp/csphere-logger || die "build csphere-logger"  # rpm: /tmp/csphere-logger
 	git log --pretty=format:"%h - %an, %ai : %s" -1	| tee /tmp/csphere-product-csphere-logger.txt
-	cp -a csphere-logger /tmp/csphere-logger # rpm: /tmp/csphere-logger
 }
 
 src_install() {
