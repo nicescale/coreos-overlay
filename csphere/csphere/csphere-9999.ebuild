@@ -63,8 +63,12 @@ src_compile() {
 	mkdir -p /tmp/etc/
 	cp -a ./tools/etc/* /tmp/etc/ || die "copy tools/etc"
 	GIT_COMMIT=$(git rev-parse --short HEAD)
+	if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+		GIT_COMMIT=${GIT_COMMIT}-dirty
+	fi
 	PKG=github.com/nicescale/csphere
 	VERSION=$(cat VERSION.txt)
+	BUILDAT=$(date +%F_%T-%Z)
 
 	# build version 1.0.0 with godep
 	# GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/Godeps/_workspace/ \
@@ -73,7 +77,7 @@ src_compile() {
 	GOPATH=/tmp:/tmp/src/github.com/nicescale/csphere/vendor \
 		CGO_ENABLED=0 GOOS=linux \
 		go build -a -installsuffix nocgo \
-		-ldflags=" -linkmode=internal -X $PKG/version.version '$VERSION' -X $PKG/version.gitCommit '$GIT_COMMIT' -w" \
+		-ldflags=" -linkmode=internal -X $PKG/version.version '$VERSION' -X $PKG/version.gitCommit '$GIT_COMMIT' -X $PKG/version.buildAt '$BUILDAT' -w" \
 		-o /tmp/csphere || die  "build csphere"   # rpm: /tmp/csphere
 
 	rm -rf /tmp/csphere-quota
