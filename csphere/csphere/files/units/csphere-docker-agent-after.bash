@@ -1,6 +1,17 @@
 #!/bin/bash
 set -ex
+
+# load inst opts
 . /etc/csphere/inst-opts.env
+
+# process qingcloud netmode
+if [ "${COS_NETMODE}" == "qingcloud" ]; then
+	docker network ls | grep -q "${COS_QC_VXNET}" && exit 0
+	docker network create -d csphere --ipam-driver=csphere -o vxnet=${COS_QC_VXNET} --ipam-opt vxnet=${COS_QC_VXNET} ${COS_QC_VXNET}
+	exit 0
+fi
+
+# process ipvlan netmode
 if [ "${COS_NETMODE}" != "ipvlan" ]; then
   exit 0
 fi

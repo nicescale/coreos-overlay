@@ -4,18 +4,23 @@ set -x
 # load inst-opts.env
 . /etc/csphere/inst-opts.env
 
-if [ "${COS_NETMODE}"  == "bridge" ]; then
-	exec /bin/skydns -verbose -addr=0.0.0.0:53 -domain="csphere.local." -machines=http://127.0.0.1:2379
-fi
-
-
-if [ "${COS_NETMODE}" != "ipvlan" ]; then
-	echo "env COS_NETMODE must be ipvlan or bridge"
-	exit 1
-fi
-
 # load csphere-public.env
 . /etc/csphere/csphere-public.env
+
+if [ "${COS_NETMODE}"  == "bridge" ]; then
+	exec /bin/skydns -verbose -addr=0.0.0.0:53 -domain="csphere.local." -machines=http://127.0.0.1:2379
+	exit
+fi
+
+if [ "${COS_NETMODE}" == "qingcloud" ]; then
+	exec /bin/skydns -verbose -addr=${LOCAL_IP}:53 -domain="csphere.local." -machines=http://127.0.0.1:2379
+	exit
+fi
+
+if [ "${COS_NETMODE}" != "ipvlan" ]; then
+	echo "env COS_NETMODE must be ipvlan or bridge or qingcloud"
+	exit 1
+fi
 
 # The IPV4 address of the gateway.
 GATEWAY=${DEFAULT_GW}

@@ -108,57 +108,39 @@ mask1=
 mask=
 defaultgw=
 
-# get ip/mask <bridge/ipvlan>
+# get ip/mask <bridge/ipvlan/qingcloud>
+target_inetdev=
 if [ "${COS_NETMODE}" == "bridge" ]; then
-	for i in `seq 1 10`
-	do
-		ipaddr=$( ifconfig br0  2>&- |\
-			awk '($1=="inet"){print $2;exit}' )
-		if [ -z "${ipaddr}" ]; then
-			echo "WARN: no local ipaddr found on br0, waitting for ${i} seconds ..."
-			sleep ${i}s
-		else
-			break
-		fi
-	done
-	# we stop while networking broken
-	if [ -z "${ipaddr}" ]; then
-		echo "CRIT: no local ipaddr found on br0, abort."
-		exit 1
-	fi
-	mask1=$( ifconfig br0  2>&- |\
-		awk '($1=="inet"){print $4;exit}' )
-	mask=$( mask2cidr ${mask1} )
-	if [ $? -ne 0 ]; then
-		echo "WARN: convert mask to cidr error on ${mask1}"
-	fi
-
+	target_inetdev="br0"
 elif [ "${COS_NETMODE}" == "ipvlan" ]; then
-
-	for i in `seq 1 10`
-	do
-		ipaddr=$( ifconfig ${COS_INETDEV} 2>&- |\
-			awk '($1=="inet"){print $2;exit}' )
-		if [ -z "${ipaddr}" ]; then
-			echo "WARN: no local ipaddr found on ${COS_INETDEV} , waitting for ${i} seconds ..."
-			sleep ${i}s
-		else
-			break
-		fi
-	done
-	# we stop while networking broken
-	if [ -z "${ipaddr}" ]; then
-		echo "CRIT: no local ipaddr found on ${COS_INETDEV}, abort."
-		exit 1
-	fi
-	mask1=$( ifconfig ${COS_INETDEV} 2>&- |\
-		awk '($1=="inet"){print $4;exit}' )
-	mask=$( mask2cidr ${mask1} )
-	if [ $? -ne 0 ]; then
-		echo "WARN: convert mask to cidr error on ${mask1}"
-	fi
-
+	target_inetdev="${COS_INETDEV}"
+elif [ "${COS_NETMODE}" == "qingcloud" ]; then
+	target_inetdev="eth0"
 fi
+# detect local ip addr
+for i in `seq 1 10`
+do
+	ipaddr=$( ifconfig ${target_inetdev} 2>&- |\
+		awk '($1=="inet"){print $2;exit}' )
+	if [ -z "${ipaddr}" ]; then
+		echo "WARN: no local ipaddr found on ${target_inetdev}, waitting for ${i} seconds ..."
+		sleep ${i}s
+	else
+		break
+	fi
+done
+# we stop while networking broken
+if [ -z "${ipaddr}" ]; then
+	echo "CRIT: no local ipaddr found on ${target_inetdev}, abort."
+	exit 1
+fi
+mask1=$( ifconfig ${target_inetdev} 2>&- |\
+	awk '($1=="inet"){print $4;exit}' )
+mask=$( mask2cidr ${mask1} )
+if [ $? -ne 0 ]; then
+	echo "WARN: convert mask to cidr error on ${mask1}"
+fi
+
 
 # set defaultgw as system's default gw for docker container default gateway
 defaultgw=$(route -n 2>&- |\
@@ -332,6 +314,11 @@ EOF
 DOCKER_START_OPTS=daemon --csphere --iptables=false --ip-forward=false --storage-driver=overlay ${dockerAppendOpts=}
 DEFAULT_NETWORK=${COS_NETMODE}
 EOF
+	elif [ "${COS_NETMODE}" == "qingcloud" ]; then
+	cat << EOF > /etc/csphere/csphere-docker-agent.env
+DOCKER_START_OPTS=daemon --storage-driver=overlay ${dockerAppendOpts=}
+DEFAULT_NETWORK=${COS_QC_VXNET}
+EOF
 	fi
 
 	# setup agent env: AGENT_DNSIP which will be used as container's HostConfig.DNS
@@ -346,7 +333,7 @@ EOF
 	fi
 
 	# create /etc/csphere/csphere-skydns.env
-	if [ "${COS_NETMODE}" == "bridge" ]; then
+	if [ "${COS_NETMODE}" == "bridge" -o "${COS_NETMODE}" == "qingcloud" ]; then
 		:> /etc/csphere/csphere-skydns.env
 	elif [ "${COS_NETMODE}" == "ipvlan" ]; then
 		cat << EOF > /etc/csphere/csphere-skydns.env
@@ -356,18 +343,27 @@ EOF
 
 	# create /etc/csphere/csphere-dockeripam.env
 	cat << EOF > /etc/csphere/csphere-dockeripam.env
+ACCESS_KEY_ID=${COS_QC_ACCESSKEY}
+SECRET_KEY=${COS_QC_SECRETKEY}
+ZONE=${COS_QC_ZONE}
+KV_URL=etcd://127.0.0.1:2379
 DEBUG=true
 EOF
 
 	# create /etc/csphere/csphere-agent.env
+	if [ "${COS_NETMODE}" == "qingcloud" ]; then
+		DN=${COS_QC_VXNET}
+	else
+		DN=${COS_NETMODE}
+	fi
 	cat << EOF > /etc/csphere/csphere-agent.env
 ROLE=agent
 CONTROLLER_ADDR=${COS_CONTROLLER}
 DNS_ADDR=${AGENT_DNSIP}
 AUTH_KEY=${COS_INST_CODE}
 SVRPOOLID=${COS_SVRPOOL_ID}
-DEFAULT_NETWORK=${COS_NETMODE}
 CLUSTERID=${COS_CLUSTER_ID}
+DEFAULT_NETWORK=${DN}
 EOF
 
 	# create /etc/csphere/csphere-etcd2-agent.env
